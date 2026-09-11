@@ -62,6 +62,11 @@ const statusLabels = [
   "Aussengerät/Wärmequelle fertig",
   "Bus/Kommunikation fertig",
   "Anlage betriebsbereit",
+  "Kälte-/Klimagerät montiert",
+  "Kaltwasser-Hydraulik fertiggestellt",
+  "Hydraulik gefüllt und entlüftet",
+  "Rückkühler / Aussengerät fertig",
+  "Anlage bereit zur Inbetriebnahme",
 ];
 
 
@@ -111,7 +116,7 @@ function makeReference(type) {
       .slice(0, 6)
       .toUpperCase();
 
-  return `HIQ-${prefix}-${stamp}-${random}`;
+  return `KWP-${prefix}-${stamp}-${random}`;
 }
 
 
@@ -1853,6 +1858,10 @@ async function handleForm(
     );
   }
 
+  const bereichRaw = String(form.get("_bereich") || "waermepumpe").trim().toLowerCase();
+  const bereich = bereichRaw === "klima" ? "klima" : "waermepumpe";
+  const bereichTitle = bereich === "klima" ? "Klima & Kaltwasser" : "Wärmepumpen";
+
   const title =
     formTitles[type];
 
@@ -1994,7 +2003,7 @@ async function handleForm(
     fullName(form);
 
   const subjectBits = [
-    `KLIMA-WP | ${title}`,
+    `KLIMA-WP | ${bereichTitle} | ${title}`,
     reference
   ];
 
