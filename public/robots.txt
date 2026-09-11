@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://klima-wp.ch/sitemap.xml
