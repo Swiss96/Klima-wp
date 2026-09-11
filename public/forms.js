@@ -26,6 +26,7 @@ document.querySelectorAll('#serviceForm').forEach(form => {
     try {
       const data = new FormData(form);
       data.append('_form_type', getFormType());
+      data.append('_bereich', document.body.dataset.bereich || 'waermepumpe');
 
       if (data.get('website')) return;
 
