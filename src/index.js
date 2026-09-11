@@ -365,7 +365,7 @@ function headerBlock(title, reference) {
         font-weight:900;
         letter-spacing:-1px;
       ">
-        HEAT<span style="color:#9bd82e;">IQ</span>
+        KLIMA<span style="color:#9bd82e;">-WP</span>
       </div>
 
       <div style="
