@@ -1,0 +1,9 @@
+KLIMA-WP.ch migration complete
+
+The website, Worker configuration, form e-mail routing, generated references and documentation now use KLIMA-WP / klima-wp.ch.
+
+Configured addresses:
+- Recipient: info@klima-wp.ch
+- Sender: auftraege@mail.klima-wp.ch
+
+Cloudflare Worker name: klima-wp
