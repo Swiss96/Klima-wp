@@ -664,3 +664,7 @@ input[type="date"] {
 .form-cold .submit-btn{background:#0c4258!important;color:#fff!important}.form-warm .submit-btn{background:#173b2d!important;color:#fff!important}.form-cold .check input[type="checkbox"]{accent-color:#1784a6}.form-warm .check input[type="checkbox"]{accent-color:#3f9b54}
 .success-box{border-radius:22px!important}.form-cold .success-box{border-top:4px solid #2ab6d6}.form-warm .success-box{border-top:4px solid #d8662f}
 @media(max-width:700px){.form-domain{display:none}.form-header{padding:0 18px;min-height:68px}.form-switch{top:68px}.form-hero{padding:64px 18px 54px}.form-main{padding:38px 16px 60px}.form-card{padding:25px 18px}.back-link{font-size:12px}}
+
+/* KLIMA-WP Logo */
+.brand-lockup img{display:block;width:auto;height:48px;max-width:245px;object-fit:contain}
+@media(max-width:700px){.brand-lockup img{height:40px;max-width:190px}}

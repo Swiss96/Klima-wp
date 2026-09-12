@@ -63,3 +63,9 @@ footer{padding:60px max(28px,calc((100vw - var(--max))/2)) 28px;background:#0716
 .dual-cta-actions{grid-template-columns:1fr 1fr}.dual-cta-actions .cta-cold{border-left:3px solid #76e6ff}.dual-cta-actions .cta-warm{border-left:3px solid #d8662f}
 @media(max-width:900px){.journey-head{grid-template-columns:1fr;gap:20px}.journey-split{grid-template-columns:1fr}.journey-section{padding-top:82px;padding-bottom:82px}.hero-service-links{max-width:100%}}
 @media(max-width:660px){.hero-service-links{grid-template-columns:1fr 1fr 1fr;gap:5px}.hero-service{padding:10px 8px;grid-template-columns:1fr auto}.hero-service small{display:none}.hero-service b{font-size:.58rem}.journey-section{padding:68px 20px}.journey-card{min-height:330px;padding:25px}.journey-symbol{margin:34px 0 20px}.dual-cta-actions{grid-template-columns:1fr}}
+
+/* KLIMA-WP Logo */
+.brand-logo-img{display:block;width:auto;height:50px;max-width:250px;object-fit:contain}
+.footer-logo-img{height:64px;max-width:320px}
+@media(max-width:900px){.brand-logo-img{height:44px;max-width:210px}}
+@media(max-width:660px){.brand-logo-img{height:40px;max-width:180px}.footer-logo-img{height:56px;max-width:260px}}
