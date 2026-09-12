@@ -1,5 +1,5 @@
 const RECIPIENT = "info@klima-wp.ch";
-const SENDER = "auftraege@mail.klima-wp.ch";
+const SENDER = "auftraege@klima-wp.ch";
 
 /* =========================================================
    SICHERHEIT / LIMITS
