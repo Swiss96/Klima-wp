@@ -69,3 +69,117 @@ footer{padding:60px max(28px,calc((100vw - var(--max))/2)) 28px;background:#0716
 .footer-logo-img{height:64px;max-width:320px}
 @media(max-width:900px){.brand-logo-img{height:44px;max-width:210px}}
 @media(max-width:660px){.brand-logo-img{height:40px;max-width:180px}.footer-logo-img{height:56px;max-width:260px}}
+
+/* Kontakt – gruppiert nach Fachbereich */
+.grouped-cta-actions{display:flex;flex-direction:column;gap:28px}
+.cta-group{border-radius:18px;padding:0 22px 6px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07)}
+.cta-group-label{margin:0;padding:18px 0 11px;font-size:.68rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+.cta-group-warm{border-left:3px solid #d8662f}.cta-group-warm .cta-group-label{color:#e68a5f}
+.cta-group-cold{border-left:3px solid #76e6ff}.cta-group-cold .cta-group-label{color:#76e6ff}
+.grouped-cta-actions .cta-group a{padding:18px 0;font-size:.94rem}
+.grouped-cta-actions .cta-group a:last-child{border-bottom:0}
+.grouped-cta-actions .cta-warm b{color:#e27a48;border-color:rgba(226,122,72,.42)}
+.grouped-cta-actions .cta-warm:hover{color:#e68a5f}.grouped-cta-actions .cta-warm:hover b{background:#d8662f;color:#fff;border-color:#d8662f}
+.grouped-cta-actions .cta-cold b{color:#76e6ff;border-color:rgba(118,230,255,.35)}
+.grouped-cta-actions .cta-cold:hover{color:#76e6ff}.grouped-cta-actions .cta-cold:hover b{background:#76e6ff;color:#09202b;border-color:#76e6ff}
+.contact-mail-inline{color:#fff;text-underline-offset:4px;text-decoration-color:rgba(118,230,255,.55)}
+.contact-mail-inline:hover{color:#76e6ff}
+.grouped-cta-actions>a.cta-general{margin-top:2px;border:1px solid #274137;border-radius:16px;padding:18px 20px;background:rgba(255,255,255,.025)}
+.grouped-cta-actions>a.cta-general b{color:#fff}.grouped-cta-actions>a.cta-general:hover{color:#fff;background:rgba(255,255,255,.06)}
+@media(max-width:660px){.grouped-cta-actions{gap:20px}.cta-group{padding-left:18px;padding-right:18px}}
+
+/* =========================================================
+   KLIMA-WP BRAND REFRESH – BLAU / ORANGE
+   Grün vollständig aus der Startseite entfernt.
+   Blau = Klima & Kaltwasser, Orange = Wärmepumpen.
+   ========================================================= */
+:root{
+  --green:#20b7e8;
+  --green-2:#f28a3a;
+  --deep:#081c26;
+  --deep-2:#0d3140;
+  --ink:#10212a;
+}
+
+/* Header / Navigation */
+.split-header{background:rgba(7,23,29,.94)}
+.split-header nav a:hover,.split-header nav a.active{color:#20b7e8}
+.header-cta{background:linear-gradient(90deg,#0b4057 0%,#173b4a 48%,#b85e31 52%,#d8662f 100%)}
+.header-cta span{color:#fff}
+
+/* Allgemeine Akzente */
+.kicker{color:#1784a6}
+.kicker.light{color:#76e6ff}
+.section h2 span{color:#d8662f}
+
+/* WARUM KLIMA-WP */
+.independence{
+  background:
+    radial-gradient(circle at 8% 18%,rgba(32,183,232,.13),transparent 28%),
+    radial-gradient(circle at 92% 82%,rgba(216,102,47,.12),transparent 30%),
+    linear-gradient(135deg,#071b2b 0%,#09242f 52%,#251c18 100%);
+  color:#fff
+}
+.independence h2 span{color:#f08a57}
+.independence-copy>p:not(.kicker){color:#aabac1}
+.check-list>div>span{background:rgba(32,183,232,.13);color:#76e6ff;border:1px solid rgba(118,230,255,.22)}
+.check-list>div:nth-child(even)>span{background:rgba(216,102,47,.13);color:#f08a57;border-color:rgba(240,138,87,.22)}
+.check-list small{color:#93a6ae}
+.history-panel{background:#f7f8f7;color:#10212a;box-shadow:0 40px 90px rgba(3,20,29,.28)}
+.history-panel:before{border-color:rgba(32,183,232,.12)}
+.panel-head i{color:#0d789b;background:#e2f5fb}
+.timeline-item.active>span{border-color:#1784a6;background:#38c4ee;box-shadow:0 0 0 5px #dff5fb}
+.panel-note{background:linear-gradient(90deg,#e6f6fb,#fff1e8)}
+.panel-note>span{background:linear-gradient(135deg,#1784a6 0 50%,#d8662f 50% 100%);color:#fff}
+
+/* ABLAUF */
+.process{background:linear-gradient(180deg,#f4f7f8 0%,#f8f5f1 100%)}
+.steps{border-color:#cbd7dc}
+.step:after{background:#20b7e8;box-shadow:0 0 0 5px #dff5fb}
+.step:nth-child(even):after{background:#d8662f;box-shadow:0 0 0 5px #f8e6dc}
+
+/* Kontakt */
+.final-cta{
+  background:
+    radial-gradient(circle at 0% 100%,rgba(32,183,232,.16),transparent 34%),
+    radial-gradient(circle at 100% 0%,rgba(216,102,47,.13),transparent 32%),
+    #071b24;
+}
+.cta-glow{background:radial-gradient(circle,rgba(32,183,232,.15),rgba(216,102,47,.05) 45%,transparent 70%)}
+.final-copy>p:last-child{color:#9cafb7}
+.cta-actions a{border-color:#203d48}
+.cta-actions a:last-child{border-color:#203d48}
+.cta-actions a b{border-color:#31515e;color:#76e6ff}
+.cta-actions a:hover{color:#76e6ff}
+.cta-actions a:hover b{background:#76e6ff;color:#071b24;border-color:#76e6ff}
+.cta-group{border-color:rgba(255,255,255,.09);background:rgba(255,255,255,.025)}
+.cta-group-warm{border-left-color:#d8662f}.cta-group-warm .cta-group-label{color:#f08a57}
+.cta-group-cold{border-left-color:#20b7e8}.cta-group-cold .cta-group-label{color:#76e6ff}
+.grouped-cta-actions .cta-warm b{color:#f08a57;border-color:rgba(240,138,87,.4)}
+.grouped-cta-actions .cta-warm:hover{color:#f08a57}.grouped-cta-actions .cta-warm:hover b{background:#d8662f;color:#fff;border-color:#d8662f}
+.grouped-cta-actions .cta-cold b{color:#76e6ff;border-color:rgba(118,230,255,.35)}
+.grouped-cta-actions .cta-cold:hover{color:#76e6ff}.grouped-cta-actions .cta-cold:hover b{background:#20b7e8;color:#071b24;border-color:#20b7e8}
+.contact-mail-inline{color:#fff;text-decoration-color:rgba(118,230,255,.6)}
+.contact-mail-inline:hover{color:#76e6ff}
+.grouped-cta-actions>a.cta-general{border-color:#294652;background:rgba(255,255,255,.025)}
+
+/* Footer */
+footer{background:#06151c;color:#c5d3d8}
+.footer-brand p{color:#708892}
+.footer-col a,.footer-col span{color:#8299a2}
+.footer-col:nth-of-type(2) b{color:#76e6ff}
+.footer-col:nth-of-type(3) b{color:#f08a57}
+.footer-col a:hover{color:#76e6ff}
+.footer-col:nth-of-type(3) a:hover{color:#f08a57}
+.footer-bottom{border-color:#17343f;color:#68818b}
+
+/* Restliche alte grüne UI-Akzente neutralisieren */
+.site-header nav a:hover{color:#1784a6}
+.btn-primary span,.proof-track i,.scroll-cue i{color:#20b7e8}
+.pill span,.status-dot,.machine-top i,.hp-top i{background:#20b7e8;box-shadow:0 0 0 5px rgba(32,183,232,.12)}
+.service-card li:before,.card-link span,.accordion summary span{color:#1784a6}
+.system-stack>div>span{color:#1784a6}
+
+@media(max-width:660px){
+  .split-header.mobile-open nav{background:#071b24}
+}
