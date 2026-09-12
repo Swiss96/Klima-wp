@@ -845,13 +845,6 @@ function buildCalendarAttachment(
   }
 
 
-  /*
-   * Der Termin wird als lokaler Termin
-   * in der Zeitzone Europe/Zurich angelegt.
-   *
-   * 08:00 - 17:00 Uhr
-   */
-
   const dateCompact =
     `${match[1]}${match[2]}${match[3]}`;
 
@@ -986,11 +979,6 @@ function buildCalendarAttachment(
     `UID:${escapeIcs(uid)}`,
     `DTSTAMP:${timestamp}`,
 
-    /*
-     * Kein Ganztagstermin:
-     * 08:00 - 17:00 Europe/Zurich
-     */
-
     `DTSTART;TZID=Europe/Zurich:${startDateTime}`,
     `DTEND;TZID=Europe/Zurich:${endDateTime}`,
 
@@ -1002,18 +990,7 @@ function buildCalendarAttachment(
 
     `DESCRIPTION:${escapeIcs(description)}`,
 
-    /*
-     * Vorläufiger Termin
-     */
-
     "STATUS:TENTATIVE",
-
-    /*
-     * Trotz 08:00-17:00 bleibt der Termin
-     * als Vorbehalt transparent und blockiert
-     * die Verfügbarkeit nicht definitiv.
-     */
-
     "TRANSP:TRANSPARENT",
 
     "END:VEVENT",
@@ -1858,9 +1835,22 @@ async function handleForm(
     );
   }
 
-  const bereichRaw = String(form.get("_bereich") || "waermepumpe").trim().toLowerCase();
-  const bereich = bereichRaw === "klima" ? "klima" : "waermepumpe";
-  const bereichTitle = bereich === "klima" ? "Klima & Kaltwasser" : "Wärmepumpen";
+  const bereichRaw =
+    String(
+      form.get("_bereich") || "waermepumpe"
+    )
+      .trim()
+      .toLowerCase();
+
+  const bereich =
+    bereichRaw === "klima"
+      ? "klima"
+      : "waermepumpe";
+
+  const bereichTitle =
+    bereich === "klima"
+      ? "Klima & Kaltwasser"
+      : "Wärmepumpen";
 
   const title =
     formTitles[type];
@@ -2002,8 +1992,23 @@ async function handleForm(
     value(form, "firma") ||
     fullName(form);
 
+
+  /* =======================================================
+     E-MAIL-BETREFF
+     ======================================================= */
+
+  const subjectType =
+    type === "inbetriebnahme"
+      ? "Inbetriebnahme"
+      : type === "wartung"
+        ? "Wartung"
+        : type === "stoerung"
+          ? "Störung"
+          : "Anfrage";
+
   const subjectBits = [
-    `KLIMA-WP | ${bereichTitle} | ${title}`,
+    bereichTitle,
+    subjectType,
     reference
   ];
 
@@ -2017,6 +2022,7 @@ async function handleForm(
 
   const subject =
     subjectBits.join(" | ");
+
 
   let html;
 
