@@ -668,3 +668,5 @@ input[type="date"] {
 /* KLIMA-WP Logo */
 .brand-lockup img{display:block;width:auto;height:48px;max-width:245px;object-fit:contain}
 @media(max-width:700px){.brand-lockup img{height:40px;max-width:190px}}
+
+.service-overview-link{margin-top:20px}.service-overview-link a{font-size:13px;font-weight:800;color:inherit;text-underline-offset:4px}
