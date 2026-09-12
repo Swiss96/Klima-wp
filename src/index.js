@@ -845,13 +845,6 @@ function buildCalendarAttachment(
   }
 
 
-  /*
-   * Der Termin wird als lokaler Termin
-   * in der Zeitzone Europe/Zurich angelegt.
-   *
-   * 08:00 - 17:00 Uhr
-   */
-
   const dateCompact =
     `${match[1]}${match[2]}${match[3]}`;
 
@@ -986,11 +979,6 @@ function buildCalendarAttachment(
     `UID:${escapeIcs(uid)}`,
     `DTSTAMP:${timestamp}`,
 
-    /*
-     * Kein Ganztagstermin:
-     * 08:00 - 17:00 Europe/Zurich
-     */
-
     `DTSTART;TZID=Europe/Zurich:${startDateTime}`,
     `DTEND;TZID=Europe/Zurich:${endDateTime}`,
 
@@ -1002,18 +990,7 @@ function buildCalendarAttachment(
 
     `DESCRIPTION:${escapeIcs(description)}`,
 
-    /*
-     * Vorläufiger Termin
-     */
-
     "STATUS:TENTATIVE",
-
-    /*
-     * Trotz 08:00-17:00 bleibt der Termin
-     * als Vorbehalt transparent und blockiert
-     * die Verfügbarkeit nicht definitiv.
-     */
-
     "TRANSP:TRANSPARENT",
 
     "END:VEVENT",
@@ -1075,55 +1052,16 @@ function buildInbetriebnahmeEmail(
     "05 · Wärmepumpe & Anlage",
 
     table(
-      row(
-        "Hersteller",
-        value(form, "hersteller")
-      ) +
-
-      row(
-        "Modell / Typ",
-        value(form, "modell")
-      ) +
-
-      row(
-        "Seriennummer",
-        value(form, "seriennummer")
-      ) +
-
-      row(
-        "Heizleistung",
-        value(form, "heizleistung")
-      ) +
-
-      row(
-        "Gebäudetyp",
-        value(form, "gebaeudetyp")
-      ) +
-
-      row(
-        "Projekt",
-        value(form, "projekt")
-      ) +
-
-      row(
-        "Wärmeabgabe",
-        value(form, "waermeabgabe")
-      ) +
-
-      row(
-        "Warmwasser über Wärmepumpe",
-        value(form, "warmwasser")
-      ) +
-
-      row(
-        "Pufferspeicher",
-        value(form, "puffer")
-      ) +
-
-      row(
-        "Zusatzheizung / Elektroheizstab",
-        value(form, "zusatzheizung")
-      )
+      row("Hersteller", value(form, "hersteller")) +
+      row("Modell / Typ", value(form, "modell")) +
+      row("Seriennummer", value(form, "seriennummer")) +
+      row("Heizleistung", value(form, "heizleistung")) +
+      row("Gebäudetyp", value(form, "gebaeudetyp")) +
+      row("Projekt", value(form, "projekt")) +
+      row("Wärmeabgabe", value(form, "waermeabgabe")) +
+      row("Warmwasser über Wärmepumpe", value(form, "warmwasser")) +
+      row("Pufferspeicher", value(form, "puffer")) +
+      row("Zusatzheizung / Elektroheizstab", value(form, "zusatzheizung"))
     )
   );
 
@@ -1260,45 +1198,14 @@ function buildWartungEmail(
     "05 · Wärmepumpe & Anlage",
 
     table(
-      row(
-        "Hersteller",
-        value(form, "hersteller")
-      ) +
-
-      row(
-        "Modell / Typ",
-        value(form, "modell")
-      ) +
-
-      row(
-        "Seriennummer",
-        value(form, "seriennummer")
-      ) +
-
-      row(
-        "Alter der Anlage",
-        value(form, "anlagenalter")
-      ) +
-
-      row(
-        "Gebäudetyp",
-        value(form, "gebaeudetyp")
-      ) +
-
-      row(
-        "Wärmeabgabe",
-        value(form, "waermeabgabe")
-      ) +
-
-      row(
-        "Warmwasser über Wärmepumpe",
-        value(form, "warmwasser")
-      ) +
-
-      row(
-        "Letzte Wartung",
-        dateValue(form, "letzte_wartung")
-      )
+      row("Hersteller", value(form, "hersteller")) +
+      row("Modell / Typ", value(form, "modell")) +
+      row("Seriennummer", value(form, "seriennummer")) +
+      row("Alter der Anlage", value(form, "anlagenalter")) +
+      row("Gebäudetyp", value(form, "gebaeudetyp")) +
+      row("Wärmeabgabe", value(form, "waermeabgabe")) +
+      row("Warmwasser über Wärmepumpe", value(form, "warmwasser")) +
+      row("Letzte Wartung", dateValue(form, "letzte_wartung"))
     )
   );
 
@@ -1523,50 +1430,15 @@ function buildStoerungEmail(
     "06 · Anlage & Fehlerbild",
 
     table(
-      row(
-        "Hersteller",
-        value(form, "hersteller")
-      ) +
-
-      row(
-        "Modell / Typ",
-        value(form, "modell")
-      ) +
-
-      row(
-        "Seriennummer",
-        value(form, "seriennummer")
-      ) +
-
-      row(
-        "Fehlercode / Displaymeldung",
-        value(form, "fehlercode")
-      ) +
-
-      row(
-        "Seit wann besteht die Störung?",
-        value(form, "seit_wann")
-      ) +
-
-      row(
-        "Anlage komplett ausgefallen?",
-        value(form, "ausfall")
-      ) +
-
-      row(
-        "Reset bereits versucht?",
-        value(form, "reset")
-      ) +
-
-      row(
-        "Fehler tritt auf",
-        value(form, "fehler_haeufigkeit")
-      ) +
-
-      row(
-        "Beschreibung",
-        value(form, "beschreibung")
-      )
+      row("Hersteller", value(form, "hersteller")) +
+      row("Modell / Typ", value(form, "modell")) +
+      row("Seriennummer", value(form, "seriennummer")) +
+      row("Fehlercode / Displaymeldung", value(form, "fehlercode")) +
+      row("Seit wann besteht die Störung?", value(form, "seit_wann")) +
+      row("Anlage komplett ausgefallen?", value(form, "ausfall")) +
+      row("Reset bereits versucht?", value(form, "reset")) +
+      row("Fehler tritt auf", value(form, "fehler_haeufigkeit")) +
+      row("Beschreibung", value(form, "beschreibung"))
     )
   );
 
@@ -1858,9 +1730,22 @@ async function handleForm(
     );
   }
 
-  const bereichRaw = String(form.get("_bereich") || "waermepumpe").trim().toLowerCase();
-  const bereich = bereichRaw === "klima" ? "klima" : "waermepumpe";
-  const bereichTitle = bereich === "klima" ? "Klima & Kaltwasser" : "Wärmepumpen";
+  const bereichRaw =
+    String(
+      form.get("_bereich") || "waermepumpe"
+    )
+      .trim()
+      .toLowerCase();
+
+  const bereich =
+    bereichRaw === "klima"
+      ? "klima"
+      : "waermepumpe";
+
+  const bereichTitle =
+    bereich === "klima"
+      ? "Klima & Kaltwasser"
+      : "Wärmepumpen";
 
   const title =
     formTitles[type];
@@ -2002,8 +1887,23 @@ async function handleForm(
     value(form, "firma") ||
     fullName(form);
 
+
+  /* =========================================================
+     BETREFF
+     ========================================================= */
+
+  const subjectType =
+    type === "inbetriebnahme"
+      ? "Inbetriebnahme"
+      : type === "wartung"
+        ? "Wartung"
+        : type === "stoerung"
+          ? "Störung"
+          : "Anfrage";
+
   const subjectBits = [
-    `KLIMA-WP | ${bereichTitle} | ${title}`,
+    bereichTitle,
+    subjectType,
     reference
   ];
 
@@ -2017,6 +1917,7 @@ async function handleForm(
 
   const subject =
     subjectBits.join(" | ");
+
 
   let html;
 
