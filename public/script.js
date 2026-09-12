@@ -74,3 +74,47 @@ divider?.addEventListener('keydown', e => {
 window.addEventListener('resize', () => {
   if (!window.matchMedia('(max-width: 900px)').matches) applySplit(split);
 });
+
+
+// KLIMA-WP Analytics: service CTA and contact clicks
+function kwpTrack(eventName, params = {}) {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', eventName, params);
+  }
+}
+
+function kwpServiceFromHref(href = '') {
+  const value = href.toLowerCase();
+  if (value.includes('stoerung')) return 'stoerung';
+  if (value.includes('inbetriebnahme')) return 'inbetriebnahme';
+  if (value.includes('wartung')) return 'wartung';
+  return '';
+}
+
+function kwpAreaFromHref(href = '') {
+  return href.toLowerCase().includes('klima-') ? 'klima_kaltwasser' : 'waermepumpe';
+}
+
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a[href]');
+  if (!link) return;
+
+  const href = link.getAttribute('href') || '';
+  const service = kwpServiceFromHref(href);
+
+  if (service && href.endsWith('.html')) {
+    kwpTrack('service_cta_click', {
+      service,
+      bereich: kwpAreaFromHref(href),
+      link_text: (link.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 100),
+      link_url: link.href
+    });
+  }
+
+  if (href.startsWith('mailto:')) {
+    kwpTrack('contact_click', {
+      contact_method: 'email',
+      link_url: href
+    });
+  }
+});

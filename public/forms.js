@@ -1,3 +1,14 @@
+
+function kwpTrack(eventName, params = {}) {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', eventName, params);
+  }
+}
+
+function getAnalyticsArea() {
+  return document.body.dataset.bereich === 'klima' ? 'klima_kaltwasser' : 'waermepumpe';
+}
+
 function getFormType() {
   const path = location.pathname.toLowerCase();
   if (path.includes("inbetriebnahme")) return "inbetriebnahme";
@@ -7,6 +18,17 @@ function getFormType() {
 }
 
 document.querySelectorAll('#serviceForm').forEach(form => {
+  let formStarted = false;
+
+  form.addEventListener('input', () => {
+    if (formStarted) return;
+    formStarted = true;
+    kwpTrack('form_start', {
+      service: getFormType(),
+      bereich: getAnalyticsArea()
+    });
+  }, { once: true });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -50,6 +72,11 @@ document.querySelectorAll('#serviceForm').forEach(form => {
       success?.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
+      });
+
+      kwpTrack('generate_lead', {
+        service: getFormType(),
+        bereich: getAnalyticsArea()
       });
 
     } catch (err) {
