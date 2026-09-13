@@ -3,6 +3,7 @@
   "name": "klima-wp",
   "main": "src/index.js",
   "compatibility_date": "2026-08-14",
+  "keep_vars": true,
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
@@ -21,4 +22,3 @@
     "enabled": true
   }
 }
-"keep_vars": true
