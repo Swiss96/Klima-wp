@@ -670,3 +670,234 @@ input[type="date"] {
 @media(max-width:700px){.brand-lockup img{height:40px;max-width:190px}}
 
 .service-overview-link{margin-top:20px}.service-overview-link a{font-size:13px;font-weight:800;color:inherit;text-underline-offset:4px}
+
+
+/* =========================================================
+   KLIMA-WP TERMIN-KALENDER
+   ========================================================= */
+
+.kwp-date-picker {
+  position: relative;
+  width: 100%;
+}
+
+.kwp-date-trigger {
+  width: 100%;
+  height: 54px;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #cfd8d3;
+  border-radius: 11px;
+  background: #fbfcf9;
+  color: #7a8583;
+  font: inherit;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+.kwp-date-trigger:hover {
+  border-color: #b7c4bc;
+}
+
+.kwp-date-trigger:focus,
+.kwp-date-picker.is-open .kwp-date-trigger {
+  border-color: #92c92c;
+  box-shadow: 0 0 0 3px rgba(155, 216, 46, 0.12);
+}
+
+.kwp-date-trigger.has-value {
+  color: #111718;
+}
+
+.kwp-date-trigger.has-error {
+  border-color: #c94b4b;
+  box-shadow: 0 0 0 3px rgba(201, 75, 75, 0.10);
+}
+
+.kwp-date-trigger-icon {
+  flex: 0 0 auto;
+  color: #667274;
+  font-size: 17px;
+}
+
+.kwp-calendar-panel {
+  position: absolute;
+  z-index: 1000;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(100%, 360px);
+  min-width: 320px;
+  padding: 16px;
+  border: 1px solid #d8dfda;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(23, 33, 36, 0.16);
+}
+
+.kwp-calendar-header {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.kwp-calendar-title {
+  text-align: center;
+  color: #172124;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.kwp-calendar-nav {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #d8dfda;
+  border-radius: 10px;
+  background: #f7f8f4;
+  color: #172124;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kwp-calendar-nav:disabled {
+  opacity: .3;
+  cursor: default;
+}
+
+.kwp-calendar-weekdays,
+.kwp-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.kwp-calendar-weekdays {
+  margin-bottom: 6px;
+}
+
+.kwp-calendar-weekdays span {
+  padding: 5px 0;
+  color: #8a9492;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.kwp-calendar-day,
+.kwp-calendar-empty {
+  aspect-ratio: 1;
+  min-width: 0;
+}
+
+.kwp-calendar-day {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: #f7f8f4;
+  color: #172124;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kwp-calendar-day.is-free:hover {
+  border-color: #92c92c;
+  background: #f4fae9;
+}
+
+.kwp-calendar-day.is-selected {
+  border-color: #6fa31f;
+  background: #a6df32;
+  color: #101515;
+}
+
+.kwp-calendar-day.is-busy {
+  border-color: #e1e5e2;
+  background: #e9ece9;
+  color: #a1aaa7;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.kwp-calendar-day.is-unavailable {
+  background: transparent;
+  color: #c3cac7;
+  cursor: not-allowed;
+}
+
+.kwp-calendar-legend {
+  margin-top: 13px;
+  padding-top: 11px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  border-top: 1px solid #edf0ed;
+  color: #7a8583;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.kwp-calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kwp-calendar-legend i {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 3px;
+}
+
+.kwp-calendar-legend .is-free {
+  background: #f4fae9;
+  border: 1px solid #92c92c;
+}
+
+.kwp-calendar-legend .is-busy {
+  background: #e9ece9;
+  border: 1px solid #d8dfda;
+}
+
+.kwp-date-error {
+  margin-top: 7px;
+  color: #a83c3c;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.kwp-availability-note {
+  grid-column: 1 / -1;
+  margin: 10px 0 0;
+  color: #7a8583;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .kwp-calendar-panel {
+    width: 100%;
+    min-width: 0;
+    padding: 14px;
+  }
+
+  .kwp-calendar-day {
+    font-size: 12px;
+  }
+}
