@@ -1,6 +1,23 @@
 const RECIPIENT = "info@klima-wp.ch";
 const SENDER = "auftraege@klima-wp.ch";
 
+
+/* =========================================================
+   INFOMANIAK CALDAV
+   ========================================================= */
+
+const CALDAV_BASE_URL = "https://sync.infomaniak.com";
+
+const CALDAV_CALENDAR_PATH =
+  "/calendars/SJ04610/9f7117a1-d75e-4fab-b605-2ab8e0ad1ef9/";
+
+const CALDAV_LOOKAHEAD_DAYS = 60;
+
+
+/* =========================================================
+   SICHERHEIT / LIMITS
+   ========================================================= */
+
 const ALLOWED_FORM_TYPES = new Set([
   "inbetriebnahme",
   "wartung",
@@ -33,12 +50,22 @@ const ALLOWED_FILE_EXTENSIONS = new Set([
   "heif"
 ]);
 
+
+/* =========================================================
+   FORMULARTITEL
+   ========================================================= */
+
 const formTitles = {
   inbetriebnahme: "Neue Inbetriebnahme",
   wartung: "Neue Wartungsanfrage",
   stoerung: "Neue Störungsmeldung",
-  anfrage: "Neue Anfrage"
+  anfrage: "Neue Anfrage",
 };
+
+
+/* =========================================================
+   INSTALLATIONSSTATUS
+   ========================================================= */
 
 const statusLabels = [
   "Wärmepumpe montiert",
@@ -52,34 +79,13 @@ const statusLabels = [
   "Kaltwasser-Hydraulik fertiggestellt",
   "Hydraulik gefüllt und entlüftet",
   "Rückkühler / Aussengerät fertig",
-  "Anlage bereit zur Inbetriebnahme"
+  "Anlage bereit zur Inbetriebnahme",
 ];
 
-/*
- * ============================================================
- * INFOMANIAK CALDAV
- * ============================================================
- */
 
-const CALDAV_BASE_URL = "https://sync.infomaniak.com";
-
-/*
- * Kalender "Sandro Joos"
- */
-const CALDAV_CALENDAR_PATH =
-  "/calendars/SJ04610/9f7117a1-d75e-4fab-b605-2ab8e0ad1ef9/";
-
-/*
- * Wie weit die Website freie/belegte Termine im Voraus kennt.
- */
-const CALDAV_LOOKAHEAD_DAYS = 60;
-
-
-/*
- * ============================================================
- * ALLGEMEINE HILFSFUNKTIONEN
- * ============================================================
- */
+/* =========================================================
+   HILFSFUNKTIONEN
+   ========================================================= */
 
 function escapeHtml(value = "") {
   return String(value)
@@ -88,6 +94,7 @@ function escapeHtml(value = "") {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 }
+
 
 function formatDate(value) {
   if (!value) return "";
@@ -101,6 +108,7 @@ function formatDate(value) {
   return `${match[3]}.${match[2]}.${match[1]}`;
 }
 
+
 function makeReference(type) {
   const now = new Date();
 
@@ -110,38 +118,39 @@ function makeReference(type) {
     .slice(0, 14);
 
   const prefix =
-    type === "inbetriebnahme"
-      ? "IBN"
-      : type === "wartung"
-        ? "WART"
-        : type === "stoerung"
-          ? "STOER"
-          : "ANF";
+    type === "inbetriebnahme" ? "IBN" :
+    type === "wartung" ? "WART" :
+    type === "stoerung" ? "STOER" :
+    "ANF";
 
-  const random = crypto
-    .randomUUID()
-    .replaceAll("-", "")
-    .slice(0, 6)
-    .toUpperCase();
+  const random =
+    crypto.randomUUID()
+      .replaceAll("-", "")
+      .slice(0, 6)
+      .toUpperCase();
 
   return `KWP-${prefix}-${stamp}-${random}`;
 }
+
 
 function value(form, key) {
   return String(form.get(key) || "").trim();
 }
 
+
 function values(form, key) {
   return form
     .getAll(key)
-    .filter((item) => !(item instanceof File))
-    .map((item) => String(item).trim())
+    .filter(item => !(item instanceof File))
+    .map(item => String(item).trim())
     .filter(Boolean);
 }
+
 
 function dateValue(form, key) {
   return formatDate(value(form, key));
 }
+
 
 function fullName(form, prefix = "") {
   const first = value(
@@ -159,21 +168,24 @@ function fullName(form, prefix = "") {
     .join(" ");
 }
 
-function jsonError(message, status = 400, extra = {}) {
-  return Response.json(
-    {
-      success: false,
-      error: message,
-      ...extra
-    },
-    {
-      status,
-      headers: {
-        "Cache-Control": "no-store"
-      }
+
+function jsonError(
+  message,
+  status = 400,
+  extra = {}
+) {
+  return Response.json({
+    success: false,
+    error: message,
+    ...extra
+  }, {
+    status,
+    headers: {
+      "Cache-Control": "no-store"
     }
-  );
+  });
 }
+
 
 function isValidEmail(email) {
   if (!email) return false;
@@ -188,10 +200,9 @@ function isValidEmail(email) {
     return false;
   }
 
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    emailValue
-  );
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
 }
+
 
 function safeFilename(name = "datei") {
   const cleaned = String(name)
@@ -204,6 +215,7 @@ function safeFilename(name = "datei") {
   return cleaned || "datei";
 }
 
+
 function fileExtension(filename = "") {
   const match = String(filename)
     .toLowerCase()
@@ -211,6 +223,7 @@ function fileExtension(filename = "") {
 
   return match ? match[1] : "";
 }
+
 
 function validateTextFields(form) {
   let total = 0;
@@ -241,6 +254,7 @@ function validateTextFields(form) {
   return null;
 }
 
+
 function validateUpload(file) {
   const ext = fileExtension(file.name);
   const mime = String(file.type || "").toLowerCase();
@@ -265,11 +279,357 @@ function validateUpload(file) {
 }
 
 
-/*
- * ============================================================
- * E-MAIL DARSTELLUNG
- * ============================================================
- */
+/* =========================================================
+   CALDAV HILFSFUNKTIONEN
+   ========================================================= */
+
+function todayYmd() {
+  return new Date()
+    .toISOString()
+    .slice(0, 10);
+}
+
+
+function addDaysYmd(
+  value,
+  days
+) {
+  const match = String(value).match(
+    /^(\d{4})-(\d{2})-(\d{2})$/
+  );
+
+  if (!match) {
+    return "";
+  }
+
+  const date = new Date(
+    Date.UTC(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3])
+    )
+  );
+
+  date.setUTCDate(
+    date.getUTCDate() + days
+  );
+
+  return date
+    .toISOString()
+    .slice(0, 10);
+}
+
+
+function caldavDateTime(value) {
+  const match = String(value).match(
+    /^(\d{4})-(\d{2})-(\d{2})$/
+  );
+
+  if (!match) {
+    return "";
+  }
+
+  return (
+    `${match[1]}` +
+    `${match[2]}` +
+    `${match[3]}` +
+    "T000000Z"
+  );
+}
+
+
+function decodeXml(value = "") {
+  return String(value)
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&apos;", "'")
+    .replaceAll("&#39;", "'")
+    .replaceAll("&amp;", "&")
+    .replace(/&#(\d+);/g, (_, number) =>
+      String.fromCharCode(Number(number))
+    )
+    .replace(/&#x([0-9a-f]+);/gi, (_, number) =>
+      String.fromCharCode(
+        parseInt(number, 16)
+      )
+    );
+}
+
+
+function unfoldIcs(value = "") {
+  return String(value)
+    .replace(/\r\n[ \t]/g, "")
+    .replace(/\n[ \t]/g, "");
+}
+
+
+function extractCalendarData(xml = "") {
+  const blocks = [];
+
+  const regex =
+    /<(?:[A-Za-z0-9_-]+:)?calendar-data\b[^>]*>([\s\S]*?)<\/(?:[A-Za-z0-9_-]+:)?calendar-data>/gi;
+
+  let match;
+
+  while (
+    (match = regex.exec(xml)) !== null
+  ) {
+    blocks.push(
+      decodeXml(match[1])
+    );
+  }
+
+  return blocks;
+}
+
+
+function extractBusyDates(xml = "") {
+  const busyDates = new Set();
+
+  const calendarBlocks =
+    extractCalendarData(xml);
+
+  for (const calendarText of calendarBlocks) {
+    const ics =
+      unfoldIcs(calendarText);
+
+    const events =
+      ics.match(
+        /BEGIN:VEVENT[\s\S]*?END:VEVENT/g
+      ) || [];
+
+    for (const event of events) {
+      if (
+        /(?:^|\r?\n)STATUS:CANCELLED(?:\r?\n|$)/i
+          .test(event)
+      ) {
+        continue;
+      }
+
+      const startMatch =
+        event.match(
+          /(?:^|\r?\n)DTSTART(?:;[^:\r\n]*)?:(\d{8})(?:T\d{6}Z?)?/i
+        );
+
+      if (!startMatch) {
+        continue;
+      }
+
+      const compact =
+        startMatch[1];
+
+      const date =
+        `${compact.slice(0, 4)}-` +
+        `${compact.slice(4, 6)}-` +
+        `${compact.slice(6, 8)}`;
+
+      busyDates.add(date);
+    }
+  }
+
+  return [...busyDates].sort();
+}
+
+
+function caldavAuthorization(env) {
+  if (
+    !env.CALDAV_USERNAME ||
+    !env.CALDAV_PASSWORD
+  ) {
+    throw new Error(
+      "CalDAV Zugangsdaten fehlen."
+    );
+  }
+
+  return (
+    "Basic " +
+    btoa(
+      `${env.CALDAV_USERNAME}:${env.CALDAV_PASSWORD}`
+    )
+  );
+}
+
+
+async function queryBusyDates(
+  env,
+  from,
+  toInclusive
+) {
+  const endExclusive =
+    addDaysYmd(
+      toInclusive,
+      1
+    );
+
+  if (
+    !from ||
+    !toInclusive ||
+    !endExclusive
+  ) {
+    throw new Error(
+      "Ungültiger CalDAV-Zeitraum."
+    );
+  }
+
+  const startUtc =
+    caldavDateTime(from);
+
+  const endUtc =
+    caldavDateTime(endExclusive);
+
+  const reportBody = `<?xml version="1.0" encoding="UTF-8"?>
+<c:calendar-query
+  xmlns:d="DAV:"
+  xmlns:c="urn:ietf:params:xml:ns:caldav">
+
+  <d:prop>
+    <d:getetag />
+    <c:calendar-data />
+  </d:prop>
+
+  <c:filter>
+
+    <c:comp-filter name="VCALENDAR">
+
+      <c:comp-filter name="VEVENT">
+
+        <c:time-range
+          start="${startUtc}"
+          end="${endUtc}"
+        />
+
+      </c:comp-filter>
+
+    </c:comp-filter>
+
+  </c:filter>
+
+</c:calendar-query>`;
+
+  const response =
+    await fetch(
+      CALDAV_BASE_URL +
+      CALDAV_CALENDAR_PATH,
+      {
+        method: "REPORT",
+
+        headers: {
+          "Authorization":
+            caldavAuthorization(env),
+
+          "Depth": "1",
+
+          "Content-Type":
+            "application/xml; charset=utf-8",
+
+          "Accept":
+            "application/xml, text/xml"
+        },
+
+        body:
+          reportBody
+      }
+    );
+
+  const xml =
+    await response.text();
+
+  if (!response.ok) {
+    console.error(
+      "CalDAV REPORT failed",
+      response.status,
+      xml
+    );
+
+    throw new Error(
+      `CalDAV REPORT fehlgeschlagen (${response.status}).`
+    );
+  }
+
+  return extractBusyDates(xml);
+}
+
+
+async function isDateBusy(
+  env,
+  date
+) {
+  if (!date) {
+    return false;
+  }
+
+  const busyDates =
+    await queryBusyDates(
+      env,
+      date,
+      date
+    );
+
+  return busyDates.includes(date);
+}
+
+
+/* =========================================================
+   AVAILABILITY API
+   ========================================================= */
+
+async function handleAvailability(env) {
+  const from =
+    todayYmd();
+
+  const to =
+    addDaysYmd(
+      from,
+      CALDAV_LOOKAHEAD_DAYS
+    );
+
+  try {
+    const busyDates =
+      await queryBusyDates(
+        env,
+        from,
+        to
+      );
+
+    return Response.json({
+      success: true,
+
+      range: {
+        from,
+        to
+      },
+
+      busyDates
+    }, {
+      headers: {
+        "Cache-Control": "no-store"
+      }
+    });
+  }
+
+  catch (error) {
+    console.error(
+      "Availability lookup failed",
+      error
+    );
+
+    return jsonError(
+      "Die Terminverfügbarkeit konnte momentan nicht geladen werden.",
+      503,
+      {
+        code:
+          "AVAILABILITY_UNAVAILABLE"
+      }
+    );
+  }
+}
+
+
+/* =========================================================
+   MAIL DESIGN
+   ========================================================= */
 
 function row(label, val) {
   if (
@@ -282,6 +642,7 @@ function row(label, val) {
 
   return `
     <tr>
+
       <td style="
         width:38%;
         padding:9px 12px 9px 0;
@@ -304,9 +665,11 @@ function row(label, val) {
       ">
         ${escapeHtml(val)}
       </td>
+
     </tr>
   `;
 }
+
 
 function table(rows) {
   return `
@@ -323,6 +686,7 @@ function table(rows) {
     </table>
   `;
 }
+
 
 function section(title, content) {
   return `
@@ -356,6 +720,7 @@ function section(title, content) {
     </div>
   `;
 }
+
 
 function headerBlock(title, reference) {
   return `
@@ -398,7 +763,13 @@ function headerBlock(title, reference) {
   `;
 }
 
-function mailWrapper(title, reference, intro, content) {
+
+function mailWrapper(
+  title,
+  reference,
+  intro,
+  content
+) {
   return `
     <!doctype html>
 
@@ -458,7 +829,9 @@ function mailWrapper(title, reference, intro, content) {
             border-top:0;
             border-radius:0 0 16px 16px;
           ">
+
             ${content}
+
           </div>
 
           <div style="
@@ -481,6 +854,11 @@ function mailWrapper(title, reference, intro, content) {
     </html>
   `;
 }
+
+
+/* =========================================================
+   STATUS / HINWEISKARTEN
+   ========================================================= */
 
 function statusCard(label, checked) {
   return `
@@ -511,7 +889,12 @@ function statusCard(label, checked) {
   `;
 }
 
-function samenessCard(same, yesText, noText) {
+
+function samenessCard(
+  same,
+  yesText,
+  noText
+) {
   return `
     <div style="
       margin-bottom:12px;
@@ -535,12 +918,15 @@ function samenessCard(same, yesText, noText) {
       </span>
 
       ${escapeHtml(
-        same ? yesText : noText
+        same
+          ? yesText
+          : noText
       )}
 
     </div>
   `;
 }
+
 
 function urgencyCard(level) {
   const urgent =
@@ -555,8 +941,20 @@ function urgencyCard(level) {
       margin-top:14px;
       padding:12px 14px;
       border-radius:10px;
-      background:${critical ? "#fff1f1" : urgent ? "#fff6e8" : "#f7f8f4"};
-      border:1px solid ${critical ? "#e4b3b3" : urgent ? "#e8c98e" : "#d8dfda"};
+      background:${
+        critical
+          ? "#fff1f1"
+          : urgent
+            ? "#fff6e8"
+            : "#f7f8f4"
+      };
+      border:1px solid ${
+        critical
+          ? "#e4b3b3"
+          : urgent
+            ? "#e8c98e"
+            : "#d8dfda"
+      };
     ">
 
       <div style="
@@ -583,32 +981,35 @@ function urgencyCard(level) {
 }
 
 
-/*
- * ============================================================
- * FORMULAR-BLÖCKE
- * ============================================================
- */
+/* =========================================================
+   GEMEINSAME KONTAKTBEREICHE
+   ========================================================= */
 
 function buildAuftraggeber(form, number = "01") {
   return section(
     `${number} · Auftraggeber & Rechnungsadresse`,
+
     table(
       row(
         "Auftraggeber",
         value(form, "kundentyp")
       ) +
+
       row(
         "Firma",
         value(form, "firma")
       ) +
+
       row(
         "Name",
         fullName(form)
       ) +
+
       row(
         "Strasse / Nr.",
         value(form, "auftraggeber_strasse")
       ) +
+
       row(
         "PLZ / Ort",
         [
@@ -622,18 +1023,22 @@ function buildAuftraggeber(form, number = "01") {
   );
 }
 
+
 function buildKontakt(form, number = "02") {
   return section(
     `${number} · Kontakt für Rückfragen`,
+
     table(
       row(
         "Name",
         fullName(form, "kontakt")
       ) +
+
       row(
         "Telefon",
         value(form, "kontakt_telefon")
       ) +
+
       row(
         "E-Mail",
         value(form, "kontakt_email")
@@ -642,26 +1047,31 @@ function buildKontakt(form, number = "02") {
   );
 }
 
+
 function buildVorOrt(form, number = "03") {
   const same =
     value(form, "kontakt_vor_ort_gleich") === "Ja";
 
   return section(
     `${number} · Kontaktperson vor Ort`,
+
     samenessCard(
       same,
       "Entspricht Kontakt für Rückfragen",
       "Abweichende Kontaktperson angegeben"
     ) +
+
     table(
       row(
         "Name",
         fullName(form, "vorort")
       ) +
+
       row(
         "Telefon",
         value(form, "vorort_telefon")
       ) +
+
       row(
         "E-Mail",
         value(form, "vorort_email")
@@ -670,22 +1080,26 @@ function buildVorOrt(form, number = "03") {
   );
 }
 
+
 function buildStandort(form, number = "04") {
   const same =
     value(form, "standort_gleich") === "Ja";
 
   return section(
     `${number} · Standort der Anlage`,
+
     samenessCard(
       same,
       "Entspricht Auftraggeber / Rechnungsadresse",
       "Abweichender Anlagenstandort angegeben"
     ) +
+
     table(
       row(
         "Strasse / Nr.",
         value(form, "standort_strasse")
       ) +
+
       row(
         "PLZ / Ort",
         [
@@ -695,6 +1109,7 @@ function buildStandort(form, number = "04") {
           .filter(Boolean)
           .join(" ")
       ) +
+
       row(
         "Zugangshinweis",
         value(form, "standort_zugang")
@@ -704,11 +1119,9 @@ function buildStandort(form, number = "04") {
 }
 
 
-/*
- * ============================================================
- * ICS-ANHANG
- * ============================================================
- */
+/* =========================================================
+   KALENDER / ICS
+   ========================================================= */
 
 function escapeIcs(value = "") {
   return String(value)
@@ -719,12 +1132,54 @@ function escapeIcs(value = "") {
     .replaceAll(";", "\\;");
 }
 
+
+function icsDate(value) {
+  if (!value) return "";
+
+  const match = String(value).match(
+    /^(\d{4})-(\d{2})-(\d{2})$/
+  );
+
+  if (!match) return "";
+
+  return `${match[1]}${match[2]}${match[3]}`;
+}
+
+
+function addOneDay(value) {
+  if (!value) return "";
+
+  const match = String(value).match(
+    /^(\d{4})-(\d{2})-(\d{2})$/
+  );
+
+  if (!match) return "";
+
+  const date = new Date(
+    Date.UTC(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3])
+    )
+  );
+
+  date.setUTCDate(
+    date.getUTCDate() + 1
+  );
+
+  return date
+    .toISOString()
+    .slice(0, 10);
+}
+
+
 function makeIcsTimestamp() {
   return new Date()
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}Z$/, "Z");
 }
+
 
 function buildCalendarAttachment(
   form,
@@ -738,11 +1193,14 @@ function buildCalendarAttachment(
     return null;
   }
 
-  const termin = value(form, "termin1");
+
+  const termin =
+    value(form, "termin1");
 
   if (!termin) {
     return null;
   }
+
 
   const match = termin.match(
     /^(\d{4})-(\d{2})-(\d{2})$/
@@ -751,6 +1209,7 @@ function buildCalendarAttachment(
   if (!match) {
     return null;
   }
+
 
   const dateCompact =
     `${match[1]}${match[2]}${match[3]}`;
@@ -761,13 +1220,18 @@ function buildCalendarAttachment(
   const endDateTime =
     `${dateCompact}T170000`;
 
-  const firma = value(form, "firma");
-  const person = fullName(form);
+
+  const firma =
+    value(form, "firma");
+
+  const person =
+    fullName(form);
 
   const kunde =
     firma ||
     person ||
     "Kunde";
+
 
   const ort =
     value(form, "standort_ort");
@@ -778,27 +1242,34 @@ function buildCalendarAttachment(
   const plz =
     value(form, "standort_plz");
 
-  const location = [
-    strasse,
-    [plz, ort]
+
+  const location =
+    [
+      strasse,
+
+      [plz, ort]
+        .filter(Boolean)
+        .join(" ")
+    ]
       .filter(Boolean)
-      .join(" ")
-  ]
-    .filter(Boolean)
-    .join(", ");
+      .join(", ");
+
 
   const label =
     type === "inbetriebnahme"
       ? "IBN"
       : "Wartung";
 
-  const title = [
-    `VORBEHALT · ${label}`,
-    kunde,
-    ort
-  ]
-    .filter(Boolean)
-    .join(" · ");
+
+  const title =
+    [
+      `VORBEHALT · ${label}`,
+      kunde,
+      ort
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
 
   const descriptionLines = [
     "VORLÄUFIGER TERMIN / VORBEHALT",
@@ -849,14 +1320,18 @@ function buildCalendarAttachment(
       : ""
   ].filter(Boolean);
 
+
   const description =
     descriptionLines.join("\n");
+
 
   const timestamp =
     makeIcsTimestamp();
 
+
   const uid =
     `${reference}@klima-wp.ch`;
+
 
   const ics = [
     "BEGIN:VCALENDAR",
@@ -864,28 +1339,38 @@ function buildCalendarAttachment(
     "PRODID:-//KLIMA-WP//Auftragskalender//DE",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
+
     "BEGIN:VEVENT",
+
     `UID:${escapeIcs(uid)}`,
     `DTSTAMP:${timestamp}`,
+
     `DTSTART;TZID=Europe/Zurich:${startDateTime}`,
     `DTEND;TZID=Europe/Zurich:${endDateTime}`,
+
     `SUMMARY:${escapeIcs(title)}`,
+
     location
       ? `LOCATION:${escapeIcs(location)}`
       : "",
+
     `DESCRIPTION:${escapeIcs(description)}`,
+
     "STATUS:TENTATIVE",
     "TRANSP:TRANSPARENT",
+
     "END:VEVENT",
     "END:VCALENDAR"
   ]
     .filter(Boolean)
     .join("\r\n");
 
+
   const filename =
     type === "inbetriebnahme"
       ? `${reference}-Vorbehalt-IBN.ics`
       : `${reference}-Vorbehalt-Wartung.ics`;
+
 
   return {
     content:
@@ -905,11 +1390,9 @@ function buildCalendarAttachment(
 }
 
 
-/*
- * ============================================================
- * INBETRIEBNAHME E-MAIL
- * ============================================================
- */
+/* =========================================================
+   INBETRIEBNAHME
+   ========================================================= */
 
 function buildInbetriebnahmeEmail(
   form,
@@ -930,6 +1413,7 @@ function buildInbetriebnahmeEmail(
   const standort =
     buildStandort(form, "04");
 
+
   const anlage = section(
     "05 · Wärmepumpe & Anlage",
 
@@ -938,38 +1422,47 @@ function buildInbetriebnahmeEmail(
         "Hersteller",
         value(form, "hersteller")
       ) +
+
       row(
         "Modell / Typ",
         value(form, "modell")
       ) +
+
       row(
         "Seriennummer",
         value(form, "seriennummer")
       ) +
+
       row(
         "Heizleistung",
         value(form, "heizleistung")
       ) +
+
       row(
         "Gebäudetyp",
         value(form, "gebaeudetyp")
       ) +
+
       row(
         "Projekt",
         value(form, "projekt")
       ) +
+
       row(
         "Wärmeabgabe",
         value(form, "waermeabgabe")
       ) +
+
       row(
         "Warmwasser über Wärmepumpe",
         value(form, "warmwasser")
       ) +
+
       row(
         "Pufferspeicher",
         value(form, "puffer")
       ) +
+
       row(
         "Zusatzheizung / Elektroheizstab",
         value(form, "zusatzheizung")
@@ -977,25 +1470,28 @@ function buildInbetriebnahmeEmail(
     )
   );
 
+
   const statusContent =
     statusLabels
-      .map(
-        (label) =>
-          statusCard(
-            label,
-            selectedStatuses.includes(label)
-          )
+      .map(label =>
+        statusCard(
+          label,
+          selectedStatuses.includes(label)
+        )
       )
       .join("");
+
 
   const status = section(
     "06 · Stand der Installation",
     statusContent
   );
 
+
   const dringlichkeit =
     value(form, "dringlichkeit") ||
     "Normal";
+
 
   const termin = section(
     "07 · Wunschtermin",
@@ -1005,6 +1501,7 @@ function buildInbetriebnahmeEmail(
         "Gewünschter IBN-Termin",
         dateValue(form, "termin1")
       ) +
+
       row(
         "Ersatztermin",
         dateValue(form, "termin2")
@@ -1034,11 +1531,12 @@ function buildInbetriebnahmeEmail(
     )
   );
 
+
   const customerAttachments =
     attachments.filter(
-      (item) =>
-        !item.isCalendar
+      item => !item.isCalendar
     );
+
 
   const unterlagen = section(
     "08 · Unterlagen & Bemerkungen",
@@ -1046,13 +1544,9 @@ function buildInbetriebnahmeEmail(
     table(
       row(
         "Anhänge",
-
         customerAttachments.length
           ? customerAttachments
-              .map(
-                (a) =>
-                  a.filename
-              )
+              .map(a => a.filename)
               .join(", ")
           : "Keine"
       ) +
@@ -1064,30 +1558,27 @@ function buildInbetriebnahmeEmail(
     )
   );
 
+
   return mailWrapper(
     "Neue Inbetriebnahme",
-
     reference,
-
     "Alle Angaben aus der Anmeldung sind nach Bereichen gegliedert. Hochgeladene Dateien befinden sich im Anhang dieser E-Mail.",
 
     auftraggeber +
-      kontakt +
-      vorOrt +
-      standort +
-      anlage +
-      status +
-      termin +
-      unterlagen
+    kontakt +
+    vorOrt +
+    standort +
+    anlage +
+    status +
+    termin +
+    unterlagen
   );
 }
 
 
-/*
- * ============================================================
- * WARTUNG E-MAIL
- * ============================================================
- */
+/* =========================================================
+   WARTUNG
+   ========================================================= */
 
 function buildWartungEmail(
   form,
@@ -1107,6 +1598,7 @@ function buildWartungEmail(
   const standort =
     buildStandort(form, "04");
 
+
   const anlage = section(
     "05 · Wärmepumpe & Anlage",
 
@@ -1115,30 +1607,37 @@ function buildWartungEmail(
         "Hersteller",
         value(form, "hersteller")
       ) +
+
       row(
         "Modell / Typ",
         value(form, "modell")
       ) +
+
       row(
         "Seriennummer",
         value(form, "seriennummer")
       ) +
+
       row(
         "Alter der Anlage",
         value(form, "anlagenalter")
       ) +
+
       row(
         "Gebäudetyp",
         value(form, "gebaeudetyp")
       ) +
+
       row(
         "Wärmeabgabe",
         value(form, "waermeabgabe")
       ) +
+
       row(
         "Warmwasser über Wärmepumpe",
         value(form, "warmwasser")
       ) +
+
       row(
         "Letzte Wartung",
         dateValue(form, "letzte_wartung")
@@ -1146,21 +1645,16 @@ function buildWartungEmail(
     )
   );
 
+
   const wartungsumfang =
-    values(
-      form,
-      "wartungsumfang"
-    );
+    values(form, "wartungsumfang");
+
 
   const wartungCards =
     wartungsumfang.length
       ? wartungsumfang
-          .map(
-            (item) =>
-              statusCard(
-                item,
-                true
-              )
+          .map(item =>
+            statusCard(item, true)
           )
           .join("")
       : `
@@ -1172,33 +1666,29 @@ function buildWartungEmail(
         </div>
       `;
 
-  const umfang =
-    section(
-      "06 · Wartungsumfang",
-      wartungCards
-    );
+
+  const umfang = section(
+    "06 · Wartungsumfang",
+    wartungCards
+  );
+
 
   const auffaelligkeiten =
-    values(
-      form,
-      "auffaelligkeit"
-    );
+    values(form, "auffaelligkeit");
+
 
   const auffaelligkeitCards =
     auffaelligkeiten.length
       ? auffaelligkeiten
-          .map(
-            (item) => {
-              const good =
-                item ===
-                "Keine Auffälligkeiten";
+          .map(item => {
+            const good =
+              item === "Keine Auffälligkeiten";
 
-              return statusCard(
-                item,
-                good
-              );
-            }
-          )
+            return statusCard(
+              item,
+              good
+            );
+          })
           .join("")
       : `
         <div style="
@@ -1209,72 +1699,56 @@ function buildWartungEmail(
         </div>
       `;
 
-  const zustand =
-    section(
-      "07 · Aktueller Anlagenzustand",
 
-      auffaelligkeitCards +
+  const zustand = section(
+    "07 · Aktueller Anlagenzustand",
 
-      (
-        value(
-          form,
-          "beschreibung"
-        )
-          ? `
+    auffaelligkeitCards +
+
+    (
+      value(form, "beschreibung")
+        ? `
           <div style="
             margin-top:16px;
           ">
             ${table(
               row(
                 "Beschreibung / Wünsche",
-                value(
-                  form,
-                  "beschreibung"
-                )
+                value(form, "beschreibung")
               )
             )}
           </div>
         `
-          : ""
-      )
-    );
+        : ""
+    )
+  );
+
 
   const dringlichkeit =
-    value(
-      form,
-      "dringlichkeit"
-    ) ||
+    value(form, "dringlichkeit") ||
     "Flexibel";
 
-  const termin =
-    section(
-      "08 · Wunschtermin",
 
-      table(
-        row(
-          "Gewünschter Wartungstermin",
-          dateValue(
-            form,
-            "termin1"
-          )
-        ) +
+  const termin = section(
+    "08 · Wunschtermin",
 
-        row(
-          "Ersatztermin",
-          dateValue(
-            form,
-            "termin2"
-          )
-        )
+    table(
+      row(
+        "Gewünschter Wartungstermin",
+        dateValue(form, "termin1")
       ) +
 
-      urgencyCard(
-        dringlichkeit
-      ) +
+      row(
+        "Ersatztermin",
+        dateValue(form, "termin2")
+      )
+    ) +
 
-      (
-        hasCalendar
-          ? `
+    urgencyCard(dringlichkeit) +
+
+    (
+      hasCalendar
+        ? `
           <div style="
             margin-top:12px;
             padding:11px 13px;
@@ -1289,69 +1763,59 @@ function buildWartungEmail(
             Der Termin ist noch nicht definitiv bestätigt.
           </div>
         `
-          : ""
-      )
-    );
+        : ""
+    )
+  );
+
 
   const customerAttachments =
     attachments.filter(
-      (item) =>
-        !item.isCalendar
+      item => !item.isCalendar
     );
 
-  const unterlagen =
-    section(
-      "09 · Unterlagen & Bemerkungen",
 
-      table(
-        row(
-          "Anhänge",
+  const unterlagen = section(
+    "09 · Unterlagen & Bemerkungen",
 
-          customerAttachments.length
-            ? customerAttachments
-                .map(
-                  (a) =>
-                    a.filename
-                )
-                .join(", ")
-            : "Keine"
-        ) +
+    table(
+      row(
+        "Anhänge",
+        customerAttachments.length
+          ? customerAttachments
+              .map(a => a.filename)
+              .join(", ")
+          : "Keine"
+      ) +
 
-        row(
-          "Weitere Bemerkungen",
-          value(
-            form,
-            "bemerkungen"
-          )
-        )
+      row(
+        "Weitere Bemerkungen",
+        value(form, "bemerkungen")
       )
-    );
+    )
+  );
+
 
   return mailWrapper(
     "Neue Wartungsanfrage",
-
     reference,
-
     "Die Wartungsanfrage ist nach Auftraggeber, Anlage, Wartungsumfang und Termin gegliedert. Hochgeladene Dateien befinden sich im Anhang.",
 
     auftraggeber +
-      kontakt +
-      vorOrt +
-      standort +
-      anlage +
-      umfang +
-      zustand +
-      termin +
-      unterlagen
+    kontakt +
+    vorOrt +
+    standort +
+    anlage +
+    umfang +
+    zustand +
+    termin +
+    unterlagen
   );
 }
 
 
-/*
- * ============================================================
- * STÖRUNG E-MAIL
- * ============================================================
- */
+/* =========================================================
+   STÖRUNG
+   ========================================================= */
 
 function buildStoerungEmail(
   form,
@@ -1370,21 +1834,16 @@ function buildStoerungEmail(
   const standort =
     buildStandort(form, "04");
 
+
   const stoerungen =
-    values(
-      form,
-      "stoerung"
-    );
+    values(form, "stoerung");
+
 
   const stoerungCards =
     stoerungen.length
       ? stoerungen
-          .map(
-            (item) =>
-              statusCard(
-                item,
-                false
-              )
+          .map(item =>
+            statusCard(item, false)
           )
           .join("")
       : `
@@ -1396,158 +1855,118 @@ function buildStoerungEmail(
         </div>
       `;
 
-  const fehlerart =
-    section(
-      "05 · Was funktioniert nicht?",
-      stoerungCards
-    );
 
-  const fehlerbild =
-    section(
-      "06 · Anlage & Fehlerbild",
+  const fehlerart = section(
+    "05 · Was funktioniert nicht?",
+    stoerungCards
+  );
 
-      table(
-        row(
-          "Hersteller",
-          value(
-            form,
-            "hersteller"
-          )
-        ) +
 
-        row(
-          "Modell / Typ",
-          value(
-            form,
-            "modell"
-          )
-        ) +
+  const fehlerbild = section(
+    "06 · Anlage & Fehlerbild",
 
-        row(
-          "Seriennummer",
-          value(
-            form,
-            "seriennummer"
-          )
-        ) +
+    table(
+      row(
+        "Hersteller",
+        value(form, "hersteller")
+      ) +
 
-        row(
-          "Fehlercode / Displaymeldung",
-          value(
-            form,
-            "fehlercode"
-          )
-        ) +
+      row(
+        "Modell / Typ",
+        value(form, "modell")
+      ) +
 
-        row(
-          "Seit wann besteht die Störung?",
-          value(
-            form,
-            "seit_wann"
-          )
-        ) +
+      row(
+        "Seriennummer",
+        value(form, "seriennummer")
+      ) +
 
-        row(
-          "Anlage komplett ausgefallen?",
-          value(
-            form,
-            "ausfall"
-          )
-        ) +
+      row(
+        "Fehlercode / Displaymeldung",
+        value(form, "fehlercode")
+      ) +
 
-        row(
-          "Reset bereits versucht?",
-          value(
-            form,
-            "reset"
-          )
-        ) +
+      row(
+        "Seit wann besteht die Störung?",
+        value(form, "seit_wann")
+      ) +
 
-        row(
-          "Fehler tritt auf",
-          value(
-            form,
-            "fehler_haeufigkeit"
-          )
-        ) +
+      row(
+        "Anlage komplett ausgefallen?",
+        value(form, "ausfall")
+      ) +
 
-        row(
-          "Beschreibung",
-          value(
-            form,
-            "beschreibung"
-          )
-        )
+      row(
+        "Reset bereits versucht?",
+        value(form, "reset")
+      ) +
+
+      row(
+        "Fehler tritt auf",
+        value(form, "fehler_haeufigkeit")
+      ) +
+
+      row(
+        "Beschreibung",
+        value(form, "beschreibung")
       )
-    );
+    )
+  );
+
 
   const dringlichkeit =
-    value(
-      form,
-      "dringlichkeit"
-    ) ||
+    value(form, "dringlichkeit") ||
     "Normal";
+
 
   const dringlichkeitSection =
     section(
       "07 · Dringlichkeit",
-      urgencyCard(
-        dringlichkeit
-      )
+      urgencyCard(dringlichkeit)
     );
 
-  const unterlagen =
-    section(
-      "08 · Fotos & Unterlagen",
 
-      table(
-        row(
-          "Anhänge",
+  const unterlagen = section(
+    "08 · Fotos & Unterlagen",
 
-          attachments.length
-            ? attachments
-                .map(
-                  (a) =>
-                    a.filename
-                )
-                .join(", ")
-            : "Keine"
-        ) +
+    table(
+      row(
+        "Anhänge",
+        attachments.length
+          ? attachments
+              .map(a => a.filename)
+              .join(", ")
+          : "Keine"
+      ) +
 
-        row(
-          "Weitere Bemerkungen",
-          value(
-            form,
-            "bemerkungen"
-          )
-        )
+      row(
+        "Weitere Bemerkungen",
+        value(form, "bemerkungen")
       )
-    );
+    )
+  );
+
 
   return mailWrapper(
     "Neue Störungsmeldung",
-
     reference,
-
     "Die Störungsmeldung ist nach Fehlerart, Anlage und Dringlichkeit gegliedert. Rot markierte Bereiche sollten besonders beachtet werden.",
 
     auftraggeber +
-      kontakt +
-      vorOrt +
-      standort +
-      fehlerart +
-      fehlerbild +
-      dringlichkeitSection +
-      unterlagen
+    kontakt +
+    vorOrt +
+    standort +
+    fehlerart +
+    fehlerbild +
+    dringlichkeitSection +
+    unterlagen
   );
 }
 
 
-/*
- * ============================================================
- * TEXTVERSION DER E-MAIL
- * ============================================================
- */
+/* =========================================================
+   STANDARD FALLBACK
+   ========================================================= */
 
 function readableKey(key) {
   return key
@@ -1555,10 +1974,74 @@ function readableKey(key) {
     .replaceAll("_", " ")
     .replace(
       /\b\w/g,
-      (char) =>
-        char.toUpperCase()
+      char => char.toUpperCase()
     );
 }
+
+
+function buildStandardEmail(
+  form,
+  title,
+  reference,
+  attachments
+) {
+  let rows = "";
+
+  for (const [key, item] of form.entries()) {
+    if (
+      key === "_form_type" ||
+      key === "website"
+    ) {
+      continue;
+    }
+
+    if (item instanceof File) {
+      continue;
+    }
+
+    let val =
+      String(item).trim();
+
+    if (!val) continue;
+
+    rows += row(
+      readableKey(key),
+      val
+    );
+  }
+
+
+  return mailWrapper(
+    title,
+    reference,
+    "Neue Anfrage über klima-wp.ch.",
+
+    section(
+      "Angaben",
+      table(rows)
+    ) +
+
+    section(
+      "Anhänge",
+
+      table(
+        row(
+          "Dateien",
+          attachments.length
+            ? attachments
+                .map(a => a.filename)
+                .join(", ")
+            : "Keine"
+        )
+      )
+    )
+  );
+}
+
+
+/* =========================================================
+   TEXTVERSION
+   ========================================================= */
 
 function buildText(
   form,
@@ -1574,10 +2057,8 @@ function buildText(
     ""
   ];
 
-  for (
-    const [key, item]
-    of form.entries()
-  ) {
+
+  for (const [key, item] of form.entries()) {
     if (
       key === "_form_type" ||
       key === "website" ||
@@ -1590,672 +2071,81 @@ function buildText(
     let val =
       String(item).trim();
 
-    if (!val) {
-      continue;
-    }
+    if (!val) continue;
+
 
     if (
       key === "termin1" ||
       key === "termin2" ||
       key === "letzte_wartung"
     ) {
-      val =
-        formatDate(val);
+      val = formatDate(val);
     }
+
 
     lines.push(
       `${readableKey(key)}: ${val}`
     );
   }
 
-  if (
-    selectedStatuses.length
-  ) {
+
+  if (selectedStatuses.length) {
     lines.push(
       "",
       "INSTALLATIONSSTATUS"
     );
 
-    for (
-      const label
-      of statusLabels
-    ) {
+    for (const label of statusLabels) {
       lines.push(
-        `${selectedStatuses.includes(label) ? "[X]" : "[ ]"} ${label}`
+        `${
+          selectedStatuses.includes(label)
+            ? "[X]"
+            : "[ ]"
+        } ${label}`
       );
     }
   }
 
+
   const customerAttachments =
     attachments.filter(
-      (item) =>
-        !item.isCalendar
+      item => !item.isCalendar
     );
+
 
   lines.push(
     "",
-
     customerAttachments.length
-      ? `Anhänge: ${customerAttachments
-          .map(
-            (a) =>
-              a.filename
-          )
-          .join(", ")}`
+      ? `Anhänge: ${
+          customerAttachments
+            .map(a => a.filename)
+            .join(", ")
+        }`
       : "Anhänge: keine",
-
     "",
-
     "Automatisch erstellt über klima-wp.ch"
   );
+
 
   return lines.join("\n");
 }
 
 
-/*
- * ============================================================
- * CALDAV HILFSFUNKTIONEN
- * ============================================================
- */
-
-function pad2(value) {
-  return String(value)
-    .padStart(2, "0");
-}
-
-function toCalDavUtc(date) {
-  return (
-    date.getUTCFullYear() +
-    pad2(
-      date.getUTCMonth() + 1
-    ) +
-    pad2(
-      date.getUTCDate()
-    ) +
-    "T" +
-    pad2(
-      date.getUTCHours()
-    ) +
-    pad2(
-      date.getUTCMinutes()
-    ) +
-    pad2(
-      date.getUTCSeconds()
-    ) +
-    "Z"
-  );
-}
-
-function formatZurichDate(date) {
-  return new Intl.DateTimeFormat(
-    "en-CA",
-    {
-      timeZone:
-        "Europe/Zurich",
-
-      year:
-        "numeric",
-
-      month:
-        "2-digit",
-
-      day:
-        "2-digit"
-    }
-  ).format(date);
-}
-
-function unfoldIcs(text) {
-  return String(text)
-    .replace(
-      /\r?\n[ \t]/g,
-      ""
-    );
-}
-
-function getIcsProperty(
-  eventText,
-  property
-) {
-  const regex =
-    new RegExp(
-      `^${property}(?:;[^:]*)?:(.+)$`,
-      "mi"
-    );
-
-  const match =
-    eventText.match(regex);
-
-  return match
-    ? match[1].trim()
-    : null;
-}
-
-function parseIcsDate(value) {
-  if (!value) {
-    return null;
-  }
-
-  const raw =
-    String(value).trim();
-
-  /*
-   * Ganztägiger Termin.
-   */
-  if (/^\d{8}$/.test(raw)) {
-    return {
-      date:
-        `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`,
-      raw
-    };
-  }
-
-  /*
-   * Lokale Uhrzeit, z.B. Europe/Zurich.
-   */
-  if (
-    /^\d{8}T\d{6}$/.test(
-      raw
-    )
-  ) {
-    return {
-      date:
-        `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`,
-      raw
-    };
-  }
-
-  /*
-   * UTC-Termin.
-   */
-  if (
-    /^\d{8}T\d{6}Z$/.test(
-      raw
-    )
-  ) {
-    const iso =
-      `${raw.slice(0, 4)}-` +
-      `${raw.slice(4, 6)}-` +
-      `${raw.slice(6, 8)}T` +
-      `${raw.slice(9, 11)}:` +
-      `${raw.slice(11, 13)}:` +
-      `${raw.slice(13, 15)}Z`;
-
-    const date =
-      new Date(iso);
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-      return null;
-    }
-
-    return {
-      date:
-        formatZurichDate(date),
-      raw
-    };
-  }
-
-  return null;
-}
-
-function decodeXml(value = "") {
-  return String(value)
-    .replaceAll("&lt;", "<")
-    .replaceAll("&gt;", ">")
-    .replaceAll("&amp;", "&")
-    .replaceAll("&quot;", '"')
-    .replaceAll("&apos;", "'");
-}
-
-function extractCalendarData(xml) {
-  const results = [];
-
-  const regex =
-    /<(?:[A-Za-z0-9_-]+:)?calendar-data(?:\s[^>]*)?>([\s\S]*?)<\/(?:[A-Za-z0-9_-]+:)?calendar-data>/gi;
-
-  let match;
-
-  while (
-    (
-      match =
-        regex.exec(xml)
-    ) !== null
-  ) {
-    results.push(
-      decodeXml(
-        match[1]
-      )
-    );
-  }
-
-  return results;
-}
-
-function extractBusyDates(xml) {
-  const busyDates =
-    new Set();
-
-  const calendarItems =
-    extractCalendarData(
-      xml
-    );
-
-  for (
-    const calendarData
-    of calendarItems
-  ) {
-    const unfolded =
-      unfoldIcs(
-        calendarData
-      );
-
-    const eventMatches =
-      unfolded.match(
-        /BEGIN:VEVENT[\s\S]*?END:VEVENT/g
-      ) || [];
-
-    for (
-      const eventText
-      of eventMatches
-    ) {
-      const status =
-        getIcsProperty(
-          eventText,
-          "STATUS"
-        );
-
-      if (
-        status &&
-        status.toUpperCase() ===
-          "CANCELLED"
-      ) {
-        continue;
-      }
-
-      const startRaw =
-        getIcsProperty(
-          eventText,
-          "DTSTART"
-        );
-
-      const parsed =
-        parseIcsDate(
-          startRaw
-        );
-
-      if (
-        parsed?.date
-      ) {
-        busyDates.add(
-          parsed.date
-        );
-      }
-    }
-  }
-
-  return Array
-    .from(
-      busyDates
-    )
-    .sort();
-}
-
-
-/*
- * ============================================================
- * CALDAV REPORT
- * ============================================================
- */
-
-async function queryBusyDates(
-  env,
-  start,
-  end
-) {
-  if (
-    !env.CALDAV_USERNAME ||
-    !env.CALDAV_PASSWORD
-  ) {
-    throw new Error(
-      "CALDAV_USERNAME oder CALDAV_PASSWORD fehlt."
-    );
-  }
-
-  const auth =
-    btoa(
-      `${env.CALDAV_USERNAME}:${env.CALDAV_PASSWORD}`
-    );
-
-  const startCalDav =
-    toCalDavUtc(
-      start
-    );
-
-  const endCalDav =
-    toCalDavUtc(
-      end
-    );
-
-  const calendarUrl =
-    new URL(
-      CALDAV_CALENDAR_PATH,
-      CALDAV_BASE_URL
-    ).toString();
-
-  const reportBody =
-    `<?xml version="1.0" encoding="utf-8" ?>
-<c:calendar-query
-  xmlns:d="DAV:"
-  xmlns:c="urn:ietf:params:xml:ns:caldav">
-
-  <d:prop>
-    <d:getetag />
-    <c:calendar-data />
-  </d:prop>
-
-  <c:filter>
-    <c:comp-filter name="VCALENDAR">
-      <c:comp-filter name="VEVENT">
-        <c:time-range
-          start="${startCalDav}"
-          end="${endCalDav}"
-        />
-      </c:comp-filter>
-    </c:comp-filter>
-  </c:filter>
-
-</c:calendar-query>`;
-
-  const response =
-    await fetch(
-      calendarUrl,
-      {
-        method:
-          "REPORT",
-
-        headers: {
-          "Authorization":
-            `Basic ${auth}`,
-
-          "Depth":
-            "1",
-
-          "Content-Type":
-            "application/xml; charset=utf-8",
-
-          "Accept":
-            "application/xml, text/xml"
-        },
-
-        body:
-          reportBody
-      }
-    );
-
-  const xml =
-    await response.text();
-
-  if (
-    !response.ok &&
-    response.status !== 207
-  ) {
-    throw new Error(
-      `CalDAV REPORT fehlgeschlagen: ${response.status} ${response.statusText}`
-    );
-  }
-
-  return {
-    busyDates:
-      extractBusyDates(xml),
-
-    status:
-      response.status
-  };
-}
-
-
-/*
- * ============================================================
- * ÖFFENTLICHE VERFÜGBARKEIT
- * ============================================================
- */
-
-async function getAvailability(env) {
-  const now =
-    new Date();
-
-  /*
-   * Einen grosszügigen UTC-Bereich verwenden.
-   * Damit erwischen wir die Europe/Zurich-Zeitzone
-   * auch rund um Sommer-/Winterzeit sauber.
-   */
-  const start =
-    new Date(now);
-
-  start.setUTCHours(
-    0,
-    0,
-    0,
-    0
-  );
-
-  start.setUTCDate(
-    start.getUTCDate() - 1
-  );
-
-  const end =
-    new Date(start);
-
-  end.setUTCDate(
-    end.getUTCDate() +
-    CALDAV_LOOKAHEAD_DAYS +
-    2
-  );
-
-  const result =
-    await queryBusyDates(
-      env,
-      start,
-      end
-    );
-
-  /*
-   * Nur heute + gewünschte Vorauszeit zurückgeben.
-   */
-  const today =
-    formatZurichDate(
-      new Date()
-    );
-
-  const visibleEndDate =
-    new Date();
-
-  visibleEndDate.setUTCDate(
-    visibleEndDate.getUTCDate() +
-    CALDAV_LOOKAHEAD_DAYS
-  );
-
-  const visibleEnd =
-    formatZurichDate(
-      visibleEndDate
-    );
-
-  const busyDates =
-    result.busyDates.filter(
-      (date) =>
-        date >= today &&
-        date <= visibleEnd
-    );
-
-  return {
-    busyDates,
-    range: {
-      from:
-        today,
-      to:
-        visibleEnd
-    },
-    status:
-      result.status
-  };
-}
-
-
-/*
- * ============================================================
- * EINEN BESTIMMTEN TAG PRÜFEN
- * ============================================================
- */
-
-async function checkDateBusy(
-  env,
-  targetDate
-) {
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(
-      String(targetDate)
-    )
-  ) {
-    return false;
-  }
-
-  /*
-   * Grosszügiges Zeitfenster:
-   * Vortag bis zwei Tage danach.
-   * Anschliessend vergleichen wir den tatsächlichen DTSTART-Tag.
-   */
-  const base =
-    new Date(
-      `${targetDate}T00:00:00Z`
-    );
-
-  if (
-    Number.isNaN(
-      base.getTime()
-    )
-  ) {
-    return false;
-  }
-
-  const start =
-    new Date(base);
-
-  start.setUTCDate(
-    start.getUTCDate() - 1
-  );
-
-  const end =
-    new Date(base);
-
-  end.setUTCDate(
-    end.getUTCDate() + 2
-  );
-
-  const result =
-    await queryBusyDates(
-      env,
-      start,
-      end
-    );
-
-  return result.busyDates.includes(
-    targetDate
-  );
-}
-
-
-/*
- * ============================================================
- * API: /api/availability
- * ============================================================
- */
-
-async function handleAvailability(
-  env
-) {
-  try {
-    const result =
-      await getAvailability(
-        env
-      );
-
-    /*
-     * Absichtlich keinerlei Kalendername,
-     * Kundendaten oder Terminbeschreibungen ausgeben.
-     */
-    return Response.json(
-      {
-        success:
-          true,
-
-        range:
-          result.range,
-
-        busyDates:
-          result.busyDates
-      },
-      {
-        headers: {
-          "Cache-Control":
-            "no-store, max-age=0"
-        }
-      }
-    );
-
-  } catch (error) {
-    console.error(
-      "Availability query failed",
-      error
-    );
-
-    return Response.json(
-      {
-        success:
-          false,
-
-        error:
-          "Die Terminverfügbarkeit konnte momentan nicht geladen werden."
-      },
-      {
-        status:
-          503,
-
-        headers: {
-          "Cache-Control":
-            "no-store"
-        }
-      }
-    );
-  }
-}
-
-
-/*
- * ============================================================
- * FORMULAR VERARBEITEN
- * ============================================================
- */
+/* =========================================================
+   FORMULAR VERARBEITEN
+   ========================================================= */
 
 async function handleForm(
   request,
   env
 ) {
   const contentType =
-    request.headers.get(
-      "content-type"
-    ) || "";
+    request.headers.get("content-type") || "";
 
   if (
     !contentType
       .toLowerCase()
-      .startsWith(
-        "multipart/form-data"
-      )
+      .startsWith("multipart/form-data")
   ) {
     return jsonError(
       "Ungültiges Anfrageformat.",
@@ -2265,17 +2155,12 @@ async function handleForm(
 
   const contentLength =
     Number(
-      request.headers.get(
-        "content-length"
-      ) || 0
+      request.headers.get("content-length") || 0
     );
 
   if (
-    Number.isFinite(
-      contentLength
-    ) &&
-    contentLength >
-      MAX_REQUEST_BYTES
+    Number.isFinite(contentLength) &&
+    contentLength > MAX_REQUEST_BYTES
   ) {
     return jsonError(
       "Die Anfrage ist zu gross.",
@@ -2288,7 +2173,9 @@ async function handleForm(
   try {
     form =
       await request.formData();
-  } catch (error) {
+  }
+
+  catch (error) {
     console.error(
       "FormData parsing failed",
       error
@@ -2302,17 +2189,12 @@ async function handleForm(
 
   const type =
     String(
-      form.get(
-        "_form_type"
-      ) || ""
+      form.get("_form_type") || ""
     )
       .trim()
       .toLowerCase();
 
-  if (
-    !ALLOWED_FORM_TYPES
-      .has(type)
-  ) {
+  if (!ALLOWED_FORM_TYPES.has(type)) {
     return jsonError(
       "Ungültiger Formulartyp.",
       400
@@ -2321,10 +2203,7 @@ async function handleForm(
 
   const bereichRaw =
     String(
-      form.get(
-        "_bereich"
-      ) ||
-      "waermepumpe"
+      form.get("_bereich") || "waermepumpe"
     )
       .trim()
       .toLowerCase();
@@ -2345,37 +2224,25 @@ async function handleForm(
   const reference =
     makeReference(type);
 
-  /*
-   * Honeypot
-   */
   if (
     String(
-      form.get("website") ||
-      ""
+      form.get("website") || ""
     ).trim()
   ) {
-    return Response.json(
-      {
-        success: true,
-        reference
-      },
-      {
-        headers: {
-          "Cache-Control":
-            "no-store"
-        }
+    return Response.json({
+      success: true,
+      reference
+    }, {
+      headers: {
+        "Cache-Control": "no-store"
       }
-    );
+    });
   }
 
   const textValidationError =
-    validateTextFields(
-      form
-    );
+    validateTextFields(form);
 
-  if (
-    textValidationError
-  ) {
+  if (textValidationError) {
     return jsonError(
       textValidationError,
       400
@@ -2383,95 +2250,73 @@ async function handleForm(
   }
 
 
-  /*
-   * ==========================================================
-   * SERVERSEITIGE TERMINPRÜFUNG FÜR IBN
-   * ==========================================================
-   *
-   * Selbst wenn jemand JavaScript deaktiviert oder manipuliert,
-   * wird ein belegter Termin hier nochmals abgefangen.
-   */
+  /* =======================================================
+     SERVERSEITIGE TERMINPRÜFUNG FÜR IBN
+     ======================================================= */
 
-  if (
-    type ===
-    "inbetriebnahme"
-  ) {
+  if (type === "inbetriebnahme") {
     const termin1 =
-      value(
-        form,
-        "termin1"
-      );
+      value(form, "termin1");
 
     const termin2 =
-      value(
-        form,
-        "termin2"
-      );
+      value(form, "termin2");
 
     try {
-      if (termin1) {
-        const busy =
-          await checkDateBusy(
-            env,
-            termin1
-          );
+      if (
+        termin1 &&
+        await isDateBusy(
+          env,
+          termin1
+        )
+      ) {
+        return jsonError(
+          "Der gewählte Wunschtermin ist inzwischen bereits belegt. Bitte wählen Sie einen anderen Termin.",
+          409,
+          {
+            code:
+              "DATE_UNAVAILABLE",
 
-        if (busy) {
-          return jsonError(
-            `Der gewünschte Termin ${formatDate(termin1)} ist inzwischen bereits belegt. Bitte wählen Sie einen anderen Termin.`,
-            409,
-            {
-              code:
-                "DATE_UNAVAILABLE",
+            field:
+              "termin1",
 
-              field:
-                "termin1",
-
-              date:
-                termin1
-            }
-          );
-        }
+            date:
+              termin1
+          }
+        );
       }
 
-      if (termin2) {
-        const busy =
-          await checkDateBusy(
-            env,
-            termin2
-          );
+      if (
+        termin2 &&
+        await isDateBusy(
+          env,
+          termin2
+        )
+      ) {
+        return jsonError(
+          "Der gewählte Ersatztermin ist inzwischen bereits belegt. Bitte wählen Sie einen anderen Termin.",
+          409,
+          {
+            code:
+              "DATE_UNAVAILABLE",
 
-        if (busy) {
-          return jsonError(
-            `Der Ersatztermin ${formatDate(termin2)} ist bereits belegt. Bitte wählen Sie einen anderen Ersatztermin.`,
-            409,
-            {
-              code:
-                "DATE_UNAVAILABLE",
+            field:
+              "termin2",
 
-              field:
-                "termin2",
-
-              date:
-                termin2
-            }
-          );
-        }
+            date:
+              termin2
+          }
+        );
       }
+    }
 
-    } catch (error) {
+    catch (error) {
       console.error(
         "Server-side availability check failed",
         error
       );
 
-      /*
-       * Fail closed:
-       * Wenn der Kalender nicht geprüft werden kann,
-       * nehmen wir nicht stillschweigend eine Doppelbuchung an.
-       */
       return jsonError(
-        "Die Terminverfügbarkeit konnte momentan nicht geprüft werden. Bitte versuchen Sie es in wenigen Minuten nochmals.",
+        "Die Terminverfügbarkeit konnte momentan nicht geprüft werden. Bitte versuchen Sie es später nochmals.",
         503,
         {
           code:
@@ -2486,33 +2331,19 @@ async function handleForm(
     form
       .getAll("status")
       .filter(
-        (item) =>
-          !(
-            item instanceof File
-          ) &&
-          statusLabels.includes(
-            String(item)
-          )
+        item =>
+          !(item instanceof File) &&
+          statusLabels.includes(String(item))
       )
-      .map(
-        (item) =>
-          String(item)
-      );
+      .map(item => String(item));
 
   const attachments = [];
 
   let fileCount = 0;
   let totalUploadBytes = 0;
 
-  for (
-    const [, item]
-    of form.entries()
-  ) {
-    if (
-      !(
-        item instanceof File
-      )
-    ) {
+  for (const [, item] of form.entries()) {
+    if (!(item instanceof File)) {
       continue;
     }
 
@@ -2525,10 +2356,7 @@ async function handleForm(
 
     fileCount += 1;
 
-    if (
-      fileCount >
-      MAX_FILE_COUNT
-    ) {
+    if (fileCount > MAX_FILE_COUNT) {
       return jsonError(
         "Zu viele Dateien. Maximal 5 Dateien pro Anfrage.",
         413
@@ -2536,9 +2364,7 @@ async function handleForm(
     }
 
     const uploadError =
-      validateUpload(
-        item
-      );
+      validateUpload(item);
 
     if (uploadError) {
       return jsonError(
@@ -2564,29 +2390,19 @@ async function handleForm(
       await item.arrayBuffer();
 
     const bytes =
-      new Uint8Array(
-        buffer
-      );
+      new Uint8Array(buffer);
 
     attachments.push({
-      content:
-        bytes,
+      content: bytes,
 
       filename:
-        safeFilename(
-          item.name
-        ),
+        safeFilename(item.name),
 
       type:
         ALLOWED_FILE_TYPES.has(
-          String(
-            item.type ||
-            ""
-          ).toLowerCase()
+          String(item.type || "").toLowerCase()
         )
-          ? String(
-              item.type
-            ).toLowerCase()
+          ? String(item.type).toLowerCase()
           : "application/octet-stream",
 
       disposition:
@@ -2604,31 +2420,26 @@ async function handleForm(
       reference
     );
 
-  if (
-    calendarAttachment
-  ) {
+  if (calendarAttachment) {
     attachments.push(
       calendarAttachment
     );
   }
 
   const hasCalendar =
-    Boolean(
-      calendarAttachment
-    );
+    Boolean(calendarAttachment);
 
   const ort =
-    value(
-      form,
-      "standort_ort"
-    );
+    value(form, "standort_ort");
 
   const person =
-    value(
-      form,
-      "firma"
-    ) ||
+    value(form, "firma") ||
     fullName(form);
+
+
+  /* =======================================================
+     E-MAIL-BETREFF
+     ======================================================= */
 
   const subjectType =
     type === "inbetriebnahme"
@@ -2646,28 +2457,20 @@ async function handleForm(
   ];
 
   if (person) {
-    subjectBits.push(
-      person
-    );
+    subjectBits.push(person);
   }
 
   if (ort) {
-    subjectBits.push(
-      ort
-    );
+    subjectBits.push(ort);
   }
 
   const subject =
-    subjectBits.join(
-      " | "
-    );
+    subjectBits.join(" | ");
+
 
   let html;
 
-  if (
-    type ===
-    "inbetriebnahme"
-  ) {
+  if (type === "inbetriebnahme") {
     html =
       buildInbetriebnahmeEmail(
         form,
@@ -2676,11 +2479,9 @@ async function handleForm(
         attachments,
         hasCalendar
       );
+  }
 
-  } else if (
-    type ===
-    "wartung"
-  ) {
+  else if (type === "wartung") {
     html =
       buildWartungEmail(
         form,
@@ -2688,8 +2489,9 @@ async function handleForm(
         attachments,
         hasCalendar
       );
+  }
 
-  } else {
+  else {
     html =
       buildStoerungEmail(
         form,
@@ -2708,19 +2510,11 @@ async function handleForm(
     );
 
   const candidateReplyEmail =
-    value(
-      form,
-      "kontakt_email"
-    ) ||
-    value(
-      form,
-      "email"
-    );
+    value(form, "kontakt_email") ||
+    value(form, "email");
 
   const replyEmail =
-    isValidEmail(
-      candidateReplyEmail
-    )
+    isValidEmail(candidateReplyEmail)
       ? candidateReplyEmail
       : undefined;
 
@@ -2750,25 +2544,21 @@ async function handleForm(
         attachments
       });
 
-    return Response.json(
-      {
-        success:
-          true,
+    return Response.json({
+      success: true,
 
-        reference,
+      reference,
 
-        messageId:
-          result.messageId
-      },
-      {
-        headers: {
-          "Cache-Control":
-            "no-store"
-        }
+      messageId:
+        result.messageId
+    }, {
+      headers: {
+        "Cache-Control": "no-store"
       }
-    );
+    });
+  }
 
-  } catch (error) {
+  catch (error) {
     console.error(
       "Email sending failed",
       error?.code,
@@ -2784,11 +2574,9 @@ async function handleForm(
 }
 
 
-/*
- * ============================================================
- * WORKER ROUTING
- * ============================================================
- */
+/* =========================================================
+   WORKER
+   ========================================================= */
 
 export default {
   async fetch(
@@ -2796,46 +2584,29 @@ export default {
     env
   ) {
     const url =
-      new URL(
-        request.url
-      );
+      new URL(request.url);
 
 
-    /*
-     * --------------------------------------------------------
-     * Öffentliche Terminverfügbarkeit
-     * --------------------------------------------------------
-     */
+    /* -----------------------------------------------------
+       TERMINVERFÜGBARKEIT
+       ----------------------------------------------------- */
 
     if (
-      url.pathname ===
-      "/api/availability"
+      url.pathname === "/api/availability"
     ) {
       if (
-        request.method !==
-        "GET"
+        request.method !== "GET"
       ) {
-        return Response.json(
-          {
-            success:
-              false,
-
-            error:
-              "Method not allowed"
-          },
-          {
-            status:
-              405,
-
-            headers: {
-              "Allow":
-                "GET",
-
-              "Cache-Control":
-                "no-store"
-            }
+        return Response.json({
+          success: false,
+          error: "Method not allowed"
+        }, {
+          status: 405,
+          headers: {
+            "Allow": "GET",
+            "Cache-Control": "no-store"
           }
-        );
+        });
       }
 
       return handleAvailability(
@@ -2844,41 +2615,26 @@ export default {
     }
 
 
-    /*
-     * --------------------------------------------------------
-     * Formulare
-     * --------------------------------------------------------
-     */
+    /* -----------------------------------------------------
+       FORMULAR
+       ----------------------------------------------------- */
 
     if (
-      url.pathname ===
-      "/api/form"
+      url.pathname === "/api/form"
     ) {
       if (
-        request.method !==
-        "POST"
+        request.method !== "POST"
       ) {
-        return Response.json(
-          {
-            success:
-              false,
-
-            error:
-              "Method not allowed"
-          },
-          {
-            status:
-              405,
-
-            headers: {
-              "Allow":
-                "POST",
-
-              "Cache-Control":
-                "no-store"
-            }
+        return Response.json({
+          success: false,
+          error: "Method not allowed"
+        }, {
+          status: 405,
+          headers: {
+            "Allow": "POST",
+            "Cache-Control": "no-store"
           }
-        );
+        });
       }
 
       return handleForm(
@@ -2888,43 +2644,28 @@ export default {
     }
 
 
-    /*
-     * --------------------------------------------------------
-     * Unbekannte API-Endpunkte
-     * --------------------------------------------------------
-     */
+    /* -----------------------------------------------------
+       UNBEKANNTE API ROUTE
+       ----------------------------------------------------- */
 
     if (
-      url.pathname.startsWith(
-        "/api/"
-      )
+      url.pathname.startsWith("/api/")
     ) {
-      return Response.json(
-        {
-          success:
-            false,
-
-          error:
-            "Not found"
-        },
-        {
-          status:
-            404,
-
-          headers: {
-            "Cache-Control":
-              "no-store"
-          }
+      return Response.json({
+        success: false,
+        error: "Not found"
+      }, {
+        status: 404,
+        headers: {
+          "Cache-Control": "no-store"
         }
-      );
+      });
     }
 
 
-    /*
-     * --------------------------------------------------------
-     * Normale Website
-     * --------------------------------------------------------
-     */
+    /* -----------------------------------------------------
+       STATISCHE WEBSITE
+       ----------------------------------------------------- */
 
     return env.ASSETS.fetch(
       request
