@@ -2588,6 +2588,29 @@ export default {
 
 
     /* -----------------------------------------------------
+       PERMANENTE SEO-WEITERLEITUNGEN WÄRMEPUMPEN
+       ----------------------------------------------------- */
+
+    const wpRedirects = {
+      "/inbetriebnahme": "/waermepumpen-inbetriebnahme",
+      "/inbetriebnahme.html": "/waermepumpen-inbetriebnahme",
+      "/wartung": "/waermepumpen-wartung",
+      "/wartung.html": "/waermepumpen-wartung",
+      "/stoerung": "/waermepumpen-stoerung",
+      "/stoerung.html": "/waermepumpen-stoerung"
+    };
+
+    const wpRedirectTarget = wpRedirects[url.pathname];
+
+    if (wpRedirectTarget) {
+      return Response.redirect(
+        new URL(wpRedirectTarget, url.origin).toString(),
+        301
+      );
+    }
+
+
+    /* -----------------------------------------------------
        TERMINVERFÜGBARKEIT
        ----------------------------------------------------- */
 
