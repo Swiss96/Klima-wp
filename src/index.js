@@ -1482,6 +1482,14 @@ function buildInbetriebnahmeEmail(
       .join("");
 
 
+  const elektroFreigabe = section(
+    "Elektrische Freigabe",
+    table(row(
+      "Erstprüfung nach Art. 24 NIV und elektrische Freigabe bestätigt",
+      value(form, "elektro_erstpruefung_bestaetigt") === "Ja" ? "Ja – durch Anfragesteller bestätigt" : "Nein"
+    ))
+  );
+
   const status = section(
     "06 · Stand der Installation",
     statusContent
@@ -1570,6 +1578,7 @@ function buildInbetriebnahmeEmail(
     standort +
     anlage +
     status +
+    elektroFreigabe +
     termin +
     unterlagen
   );
@@ -2212,6 +2221,15 @@ async function handleForm(
     bereichRaw === "klima"
       ? "klima"
       : "waermepumpe";
+
+  // Pflichtbestätigung für beide Inbetriebnahmeformulare, auch bei direktem API-Aufruf.
+  if (type === "inbetriebnahme" &&
+      value(form, "elektro_erstpruefung_bestaetigt") !== "Ja") {
+    return jsonError(
+      "Bitte bestätigen Sie die durchgeführte und protokollierte elektrische Erstprüfung sowie die Freigabe zur Inbetriebnahme.",
+      400
+    );
+  }
 
   const bereichTitle =
     bereich === "klima"
