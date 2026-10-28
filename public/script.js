@@ -118,3 +118,27 @@ document.addEventListener('click', (event) => {
     });
   }
 });
+
+
+// Einmaliger WhatsApp-Hinweis nach der ersten Scrollbewegung pro Tab-Besuch.
+(() => {
+  const button = document.querySelector('.floating-whatsapp');
+  const hint = document.getElementById('whatsapp-hint');
+  if (!button || !hint) return;
+  const key = 'kwp-whatsapp-hint-shown';
+  try { if (sessionStorage.getItem(key) === '1') return; } catch (_) {}
+  let shown = false;
+  const showHint = () => {
+    if (shown || window.scrollY < 30) return;
+    shown = true;
+    window.removeEventListener('scroll', showHint);
+    try { sessionStorage.setItem(key, '1'); } catch (_) {}
+    hint.classList.add('is-visible');
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      button.classList.add('is-ringing');
+      button.addEventListener('animationend', () => button.classList.remove('is-ringing'), { once: true });
+    }
+    window.setTimeout(() => hint.classList.remove('is-visible'), 10000);
+  };
+  window.addEventListener('scroll', showHint, { passive: true });
+})();

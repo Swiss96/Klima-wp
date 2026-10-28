@@ -324,3 +324,12 @@ footer{background:#1e2322;color:#e7e9e7}
 .floating-nulite img{width:100%;height:100%;display:block;object-fit:cover}
 .floating-whatsapp:hover,.floating-nulite:hover{transform:translateY(-3px);box-shadow:0 16px 38px rgba(0,0,0,.3)}
 @media(max-width:660px){.floating-links{right:14px;bottom:14px;gap:8px}.floating-whatsapp,.floating-nulite{width:52px;height:52px}.floating-whatsapp svg{width:27px;height:27px}}
+
+/* Dezenter WhatsApp-Hinweis nach dem ersten Scrollen */
+.whatsapp-hint{position:absolute;right:72px;top:4px;width:max-content;max-width:min(240px,calc(100vw - 105px));padding:11px 14px;border-radius:12px;background:#fff;color:#173024;box-shadow:0 10px 30px rgba(0,0,0,.2);opacity:0;visibility:hidden;transform:translateX(8px);transition:opacity .25s ease,transform .25s ease,visibility .25s;pointer-events:none;line-height:1.4}
+.whatsapp-hint strong,.whatsapp-hint span{display:block}.whatsapp-hint strong{font-size:.9rem}.whatsapp-hint span{font-size:.76rem;margin-top:2px}
+.whatsapp-hint.is-visible{opacity:1;visibility:visible;transform:translateX(0)}
+.floating-whatsapp.is-ringing{animation:kwp-whatsapp-ring .8s ease-in-out 2}
+@keyframes kwp-whatsapp-ring{0%,100%{transform:rotate(0)}15%,45%,75%{transform:rotate(-12deg)}30%,60%,90%{transform:rotate(12deg)}}
+@media(max-width:660px){.whatsapp-hint{right:64px;top:2px}}
+@media(prefers-reduced-motion:reduce){.floating-whatsapp.is-ringing{animation:none}.whatsapp-hint{transition:none}}
