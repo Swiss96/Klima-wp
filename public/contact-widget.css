@@ -1,0 +1,19 @@
+/* KLIMA-WP: einheitlicher WhatsApp-Kontakt, einmalige Scroll-Einblendung */
+.kw-contact{position:fixed;right:22px;bottom:22px;z-index:9998;display:flex;align-items:center;gap:12px;isolation:isolate}
+.kw-contact-button{width:58px;height:58px;display:grid;place-items:center;flex-shrink:0;border-radius:50%;background:#25d366;color:white;box-shadow:0 12px 32px #0004;text-decoration:none;transition:box-shadow .2s}
+.kw-contact-button svg{width:31px;height:31px;fill:currentColor}
+.kw-contact-button:hover{box-shadow:0 16px 38px #0005}
+.kw-contact-bubble{display:none;flex-direction:column;gap:3px;max-width:205px;padding:13px 16px;background:#fff;color:#10251d;border:1px solid #e0e7e1;border-radius:14px;box-shadow:0 12px 36px #0003;font:14px/1.35 system-ui,-apple-system,sans-serif}
+.kw-contact-bubble strong{font-size:16px}.kw-contact-bubble span{font-size:13px}
+.kw-contact.is-active{right:50%;bottom:50%;transform:translate(50%,50%);flex-direction:column-reverse;gap:16px;pointer-events:none}
+.kw-contact.is-active .kw-contact-button{width:112px;height:112px;pointer-events:auto;animation:kw-pop .65s ease-out both}
+.kw-contact.is-active .kw-contact-button svg{width:59px;height:59px}
+.kw-contact.is-active .kw-contact-bubble{display:flex;text-align:center;align-items:center}
+.kw-contact.is-returning{transition:right .65s ease,bottom .65s ease,transform .65s ease}
+.kw-contact.is-tip .kw-contact-bubble{display:flex}
+.kw-contact.is-tip .kw-contact-button{animation:none}
+@keyframes kw-pop{0%{transform:scale(.65)}65%{transform:scale(1.12)}100%{transform:scale(1)}}
+@media(max-width:660px){.kw-contact{right:14px;bottom:14px}.kw-contact-button{width:52px;height:52px}.kw-contact-button svg{width:28px;height:28px}.kw-contact.is-active .kw-contact-button{width:104px;height:104px}}
+@media(prefers-reduced-motion:reduce){.kw-contact,.kw-contact-button{animation:none!important;transition:none!important}}
+
+.kw-trust{padding:75px 22px;background:#edf2ee;color:#10251d}.kw-trust-inner{max-width:1120px;margin:auto}.kw-trust-kicker{font-size:12px;letter-spacing:.13em;font-weight:800}.kw-trust h2{font-size:clamp(30px,4vw,52px);line-height:1.1;max-width:780px}.kw-trust-inner>p:not(.kw-trust-kicker){max-width:760px;line-height:1.75}.kw-trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:32px}.kw-trust-grid article{background:white;border-radius:14px;padding:24px}.kw-trust-grid h3{margin:0 0 10px}.kw-trust-grid p{line-height:1.65;margin:0}@media(max-width:720px){.kw-trust-grid{grid-template-columns:1fr}}
